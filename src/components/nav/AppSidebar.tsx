@@ -6,51 +6,41 @@ import {
   User,
   CheckSquare,
   FolderGit2,
-  GraduationCap,
-  GitPullRequest,
-  Award,
   Trophy,
   Users,
   BarChart3,
-  Terminal,
-  ShieldCheck,
+  Calendar,
+  Building2,
+  Bell,
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Globe,
-  Box,
+  ShieldCheck,
 } from 'lucide-react'
-import { RoleBadge } from '@/components/ui/RoleBadge'
+import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/context/AuthContext'
+import { useCommunity } from '@/context/CommunityContext'
 
 interface NavItem {
   label: string
-  to?: string
+  to: string
   icon: LucideIcon
-  disabled?: boolean
   badge?: string
 }
 
-const MEMBER_NAV: NavItem[] = [
+// 10 Core Application Navigation Items as specified:
+// Dashboard, Members, Tasks, Leaderboard, Events, Projects, Analytics, Community, Notifications, Profile
+const SIDEBAR_NAV: NavItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Builder World', to: '/builder-world', icon: Globe },
+  { label: 'Members', to: '/members', icon: Users },
+  { label: 'Tasks', to: '/tasks', icon: CheckSquare },
+  { label: 'Leaderboard', to: '/leaderboard', icon: Trophy },
+  { label: 'Events', to: '/events', icon: Calendar },
+  { label: 'Projects', to: '/projects', icon: FolderGit2 },
+  { label: 'Analytics', to: '/analytics', icon: BarChart3 },
+  { label: 'Community', to: '/community', icon: Building2 },
+  { label: 'Notifications', to: '/notifications', icon: Bell },
   { label: 'Profile', to: '/profile', icon: User },
-  { label: 'Tasks', icon: CheckSquare, disabled: true, badge: 'Soon' },
-  { label: 'Projects', icon: FolderGit2, disabled: true, badge: 'Soon' },
-  { label: 'Learning', icon: GraduationCap, disabled: true, badge: 'Soon' },
-  { label: 'Contributions', icon: GitPullRequest, disabled: true, badge: 'Soon' },
-  { label: 'Badges', icon: Award, disabled: true, badge: 'Soon' },
-  { label: 'Leaderboard', icon: Trophy, disabled: true, badge: 'Soon' },
-]
-
-const ADMIN_NAV: NavItem[] = [
-  { label: 'Admin Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Members', to: '/admin/members', icon: Users },
-  { label: 'Tasks', icon: CheckSquare, disabled: true, badge: 'Soon' },
-  { label: 'Projects', icon: FolderGit2, disabled: true, badge: 'Soon' },
-  { label: 'Contributions', icon: GitPullRequest, disabled: true, badge: 'Soon' },
-  { label: 'Leaderboard', icon: Trophy, disabled: true, badge: 'Soon' },
-  { label: 'Analytics', icon: BarChart3, disabled: true, badge: 'Soon' },
 ]
 
 export interface AppSidebarProps {
@@ -64,7 +54,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   onToggleCollapse,
   onItemClick,
 }) => {
-  const { user, profile, role, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
+  const { activeCommunity, userRoleInActiveCommunity } = useCommunity()
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -82,7 +73,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     .substring(0, 2)
     .toUpperCase() || 'AB'
 
-  const isAdmin = role === 'admin'
+  const isManager = userRoleInActiveCommunity === 'manager'
 
   return (
     <aside
@@ -93,7 +84,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       {/* Brand Header */}
       <div className="h-14 border-b border-slate-800/80 flex items-center justify-between px-3.5">
         <NavLink
-          to={isAdmin ? '/admin/dashboard' : '/dashboard'}
+          to="/dashboard"
           onClick={onItemClick}
           className="flex items-center gap-2.5 overflow-hidden group"
         >
@@ -103,10 +94,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           {!collapsed && (
             <div className="min-w-0">
               <span className="font-mono font-bold text-xs tracking-tight text-white block truncate group-hover:text-[#FF9900] transition-colors">
-                JOURNEY TRACKER
+                AWS Journey Tracker
               </span>
-              <span className="text-[10px] font-mono text-slate-400 block -mt-0.5">
-                Student Builder Guild
+              <span className="text-[10px] font-mono text-slate-400 block -mt-0.5 truncate">
+                {activeCommunity ? activeCommunity.name : 'Community Platform'}
               </span>
             </div>
           )}
@@ -122,170 +113,75 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         </button>
       </div>
 
-      {/* Navigation Groups */}
-      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-6 scrollbar-thin">
-        {/* Admin Navigation (Only visible to verified Admins) */}
-        {isAdmin && (
-          <div>
-            {!collapsed && (
-              <div className="px-2.5 mb-1.5 flex items-center gap-1.5">
-                <ShieldCheck size={12} className="text-purple-400" />
-                <span className="text-[10px] font-mono uppercase tracking-wider text-purple-300 font-semibold">
-                  Admin Console
-                </span>
-              </div>
+      {/* Navigation Links */}
+      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-1 scrollbar-thin">
+        {!collapsed && (
+          <div className="px-2.5 mb-2 flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
+              Navigation
+            </span>
+            {isManager && (
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold uppercase bg-amber-500/20 text-[#FF9900] border border-amber-500/30 flex items-center gap-1">
+                <ShieldCheck size={10} />
+                Manager
+              </span>
             )}
-            <nav className="space-y-0.5">
-              {ADMIN_NAV.map((item) => {
-                const Icon = item.icon
-                if (item.disabled || !item.to) {
-                  return (
-                    <div
-                      key={item.label}
-                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-mono text-slate-500 cursor-not-allowed opacity-60 ${
-                        collapsed ? 'justify-center' : ''
-                      }`}
-                      title={collapsed ? `Admin: ${item.label} (Coming Soon)` : undefined}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Icon size={15} className="flex-shrink-0 text-slate-600" />
-                        {!collapsed && <span className="truncate">{item.label}</span>}
-                      </div>
-                      {!collapsed && item.badge && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded border border-slate-800 bg-slate-900/60 text-slate-500">
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                  )
-                }
-
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={onItemClick}
-                    className={({ isActive }) =>
-                      `flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors ${
-                        collapsed ? 'justify-center' : ''
-                      } ${
-                        isActive
-                          ? 'bg-purple-950/40 text-purple-300 border border-purple-800/50 font-medium'
-                          : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
-                      }`
-                    }
-                    title={collapsed ? `Admin: ${item.label}` : undefined}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon size={15} className="flex-shrink-0" />
-                      {!collapsed && <span className="truncate">{item.label}</span>}
-                    </div>
-                  </NavLink>
-                )
-              })}
-            </nav>
           </div>
         )}
 
-        {/* Member Navigation */}
-        <div className={isAdmin ? 'pt-2 border-t border-slate-800/60' : ''}>
-          {!collapsed && (
-            <div className="px-2.5 mb-1.5 flex items-center justify-between">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
-                Member Space
-              </span>
-            </div>
-          )}
-          <nav className="space-y-0.5">
-            {MEMBER_NAV.map((item) => {
-              const Icon = item.icon
-              if (item.disabled || !item.to) {
-                return (
-                  <div
-                    key={item.label}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-mono text-slate-500 cursor-not-allowed opacity-60 ${
-                      collapsed ? 'justify-center' : ''
-                    }`}
-                    title={collapsed ? `${item.label} (Coming Soon)` : undefined}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon size={15} className="flex-shrink-0 text-slate-600" />
-                      {!collapsed && <span className="truncate">{item.label}</span>}
-                    </div>
-                    {!collapsed && item.badge && (
-                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded border border-slate-800 bg-slate-900/60 text-slate-500">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                )
-              }
+        <nav className="space-y-0.5">
+          {SIDEBAR_NAV.map((item) => {
+            const Icon = item.icon
 
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={onItemClick}
-                  className={({ isActive }) =>
-                    `flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors ${
-                      collapsed ? 'justify-center' : ''
-                    } ${
-                      isActive
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-medium'
-                        : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
-                    }`
-                  }
-                  title={collapsed ? item.label : undefined}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icon size={15} className="flex-shrink-0" />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
-                  </div>
-                </NavLink>
-              )
-            })}
-          </nav>
-        </div>
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={onItemClick}
+                className={({ isActive }) =>
+                  `flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-mono transition-colors ${
+                    collapsed ? 'justify-center' : ''
+                  } ${
+                    isActive
+                      ? 'bg-[#FF9900]/15 text-[#FF9900] border border-[#FF9900]/30 font-medium shadow-xs'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`
+                }
+                title={collapsed ? item.label : undefined}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Icon size={16} className="flex-shrink-0" />
+                  {!collapsed && <span className="truncate">{item.label}</span>}
+                </div>
+              </NavLink>
+            )
+          })}
+        </nav>
       </div>
 
-      {/* Footer Profile Snippet with Sign Out */}
-      <div className="p-2.5 border-t border-slate-800/80 bg-slate-950/50">
-        <div
-          className={`flex items-center gap-2.5 p-1.5 rounded-md hover:bg-slate-850/60 transition-colors ${
-            collapsed ? 'justify-center' : ''
-          }`}
-        >
-          <NavLink
-            to="/profile"
-            onClick={onItemClick}
-            className="flex items-center gap-2.5 min-w-0 flex-1"
-            title={`${displayName} (${role || 'member'})`}
-          >
-            <div className="w-7 h-7 rounded bg-amber-950/60 border border-amber-500/40 flex items-center justify-center font-mono text-[11px] font-bold text-amber-300 flex-shrink-0">
-              {initials}
-            </div>
+      {/* User Footer Card */}
+      <div className="border-t border-slate-800/80 p-2.5 bg-[#080B11]/60">
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between gap-2'}`}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Avatar initials={initials} size="sm" />
             {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium font-mono text-slate-200 truncate">
-                    {displayName}
-                  </span>
-                  <RoleBadge role={role || 'member'} size="sm" />
-                </div>
-                <span className="text-[10px] font-mono text-slate-400 block truncate">
-                  {displayEmail}
+              <div className="min-w-0">
+                <span className="block text-xs font-mono font-medium text-slate-200 truncate leading-snug">
+                  {displayName}
+                </span>
+                <span className="block text-[10px] font-mono text-slate-500 truncate">
+                  {isManager ? 'Community Manager' : 'Community Member'}
                 </span>
               </div>
             )}
-          </NavLink>
+          </div>
 
           {!collapsed && (
             <button
               type="button"
               onClick={handleSignOut}
-              className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 transition-colors cursor-pointer"
+              className="p-1.5 rounded-md text-slate-400 hover:text-rose-400 hover:bg-slate-800/60 transition-colors cursor-pointer"
               title="Sign Out"
-              aria-label="Sign Out"
             >
               <LogOut size={14} />
             </button>

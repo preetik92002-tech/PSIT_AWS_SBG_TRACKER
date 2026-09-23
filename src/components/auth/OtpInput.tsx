@@ -5,6 +5,7 @@ interface OtpInputProps {
   onChange: (value: string[]) => void
   disabled?: boolean
   hasError?: boolean
+  isSuccess?: boolean
 }
 
 export const OtpInput: React.FC<OtpInputProps> = ({
@@ -12,6 +13,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
   onChange,
   disabled = false,
   hasError = false,
+  isSuccess = false,
 }) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -71,7 +73,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 sm:gap-3.5">
+    <div className="flex items-center justify-center gap-1.5 sm:gap-2.5">
       {value.map((digit, index) => (
         <input
           key={index}
@@ -86,10 +88,12 @@ export const OtpInput: React.FC<OtpInputProps> = ({
           onPaste={handlePaste}
           disabled={disabled}
           aria-label={`Digit ${index + 1} of 6`}
-          className={`w-11 h-13 sm:w-13 sm:h-15 text-center text-xl sm:text-2xl font-bold font-mono rounded-xl border-2 bg-white text-[#0F172A] transition-all disabled:opacity-50 ${
+          className={`w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono rounded-lg border-2 bg-white text-slate-900 transition-all disabled:opacity-50 ${
             hasError
-              ? 'border-rose-400 bg-rose-50/30 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
-              : 'border-slate-300 focus:outline-none focus:border-[#FF9900] focus:ring-4 focus:ring-amber-500/10'
+              ? 'border-rose-400 bg-rose-50/40 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
+              : isSuccess
+              ? 'border-emerald-400 bg-emerald-50/40 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-emerald-800'
+              : 'border-slate-300 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-orange-500/20'
           }`}
         />
       ))}

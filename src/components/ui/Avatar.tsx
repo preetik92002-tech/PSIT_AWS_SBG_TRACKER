@@ -3,6 +3,7 @@ import { cn } from '@/utils/cn'
 
 interface AvatarProps {
   initials: string
+  src?: string | null
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   color?: string
   className?: string
@@ -36,6 +37,7 @@ function getAvatarColor(initials: string): [string, string] {
 
 export const Avatar: React.FC<AvatarProps> = ({
   initials,
+  src,
   size = 'md',
   className,
   online,
@@ -44,16 +46,27 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <div className={cn('relative inline-flex flex-shrink-0', className)}>
-      <div
-        className={cn(
-          'flex items-center justify-center font-mono font-bold flex-shrink-0 rounded-lg',
-          'border border-slate-200/80 shadow-xs',
-          SIZE_CLASSES[size]
-        )}
-        style={{ background: bg, color: fg }}
-      >
-        {initials.slice(0, 2).toUpperCase()}
-      </div>
+      {src ? (
+        <img
+          src={src}
+          alt={initials}
+          className={cn(
+            'flex-shrink-0 rounded-lg object-cover border border-slate-200/80 shadow-xs',
+            SIZE_CLASSES[size]
+          )}
+        />
+      ) : (
+        <div
+          className={cn(
+            'flex items-center justify-center font-mono font-bold flex-shrink-0 rounded-lg',
+            'border border-slate-200/80 shadow-xs',
+            SIZE_CLASSES[size]
+          )}
+          style={{ background: bg, color: fg }}
+        >
+          {initials.slice(0, 2).toUpperCase()}
+        </div>
+      )}
       {online && (
         <span
           className="absolute bottom-0 right-0 block w-2 h-2 rounded-full border border-white bg-emerald-500"

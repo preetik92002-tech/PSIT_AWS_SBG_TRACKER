@@ -21,6 +21,13 @@ import { supabase } from '@/lib/supabase/client'
 
 const ROUTE_INFO: Record<string, { label: string; group: string }> = {
   '/dashboard': { label: 'Dashboard', group: 'Community' },
+  '/members': { label: 'Members', group: 'Community' },
+  '/tasks': { label: 'Tasks', group: 'Community' },
+  '/tasks/assign': { label: 'Assign Task', group: 'Community' },
+  '/leaderboard': { label: 'Leaderboard', group: 'Community' },
+  '/events': { label: 'Events', group: 'Community' },
+  '/events/new': { label: 'Add Event', group: 'Community' },
+  '/projects': { label: 'Projects', group: 'Community' },
   '/profile': { label: 'Profile', group: 'Member' },
   '/admin/dashboard': { label: 'Admin Dashboard', group: 'Admin' },
   '/admin/members': { label: 'Community Members', group: 'Admin' },
@@ -38,7 +45,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, role, signOut } = useAuth()
-  const { activeCommunity } = useCommunity()
+  const { activeCommunity, userRoleInActiveCommunity } = useCommunity()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [copiedShare, setCopiedShare] = useState(false)
@@ -221,8 +228,8 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
               <span className="block text-xs font-mono font-medium text-slate-800 truncate group-hover:text-[#EA580C] transition-colors">
                 {displayName}
               </span>
-              <span className="block text-[10px] font-mono text-slate-500 capitalize truncate">
-                {role === 'admin' ? 'Administrator' : 'Member'}
+              <span className="block text-[10px] font-mono text-slate-500 truncate">
+                {userRoleInActiveCommunity === 'manager' ? 'Community Manager' : 'Community Member'}
               </span>
             </div>
             <ChevronDown size={12} className="text-slate-400 group-hover:text-slate-600 transition-colors" />
@@ -237,7 +244,15 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
                   <span className="text-xs font-mono font-bold text-slate-900 truncate block">
                     {displayName}
                   </span>
-                  <RoleBadge role={role || 'member'} size="sm" />
+                  <span
+                    className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider ${
+                      userRoleInActiveCommunity === 'manager'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    {userRoleInActiveCommunity === 'manager' ? 'Manager' : 'Member'}
+                  </span>
                 </div>
                 <span className="text-[11px] font-mono text-slate-500 truncate block">
                   {displayEmail}

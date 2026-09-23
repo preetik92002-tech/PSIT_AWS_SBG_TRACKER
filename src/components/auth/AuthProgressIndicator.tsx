@@ -57,12 +57,12 @@ export const AuthProgressIndicator: React.FC<AuthProgressIndicatorProps> = ({
                 {isCompleted ? <Check size={14} strokeWidth={3} /> : step.id}
               </div>
               <span
-                className={`mt-1.5 text-[11px] font-medium tracking-tight whitespace-nowrap transition-colors ${
+                className={`mt-1.5 text-[11px] tracking-tight whitespace-nowrap transition-colors ${
                   isCurrent
-                    ? 'text-[#0F172A] font-semibold'
+                    ? 'text-[#FF9900] font-bold'
                     : isCompleted
-                    ? 'text-slate-600'
-                    : 'text-slate-400'
+                    ? 'text-slate-700 font-medium'
+                    : 'text-slate-400 font-normal'
                 }`}
               >
                 {step.label}
