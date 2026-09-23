@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { AdminRoute } from '@/components/auth/AdminRoute'
 import { PublicOnlyRoute } from '@/components/auth/PublicOnlyRoute'
 import { Login } from '@/pages/Login'
+import { Signup } from '@/pages/Signup'
 import { ForgotPassword } from '@/pages/ForgotPassword'
 import { ResetPassword } from '@/pages/ResetPassword'
 import { VerifyEmail } from '@/pages/auth/VerifyEmail'
@@ -38,6 +39,7 @@ export function App() {
             {/* Guest / Public-Only Routes (redirects to dashboard if already authenticated) */}
             <Route element={<PublicOnlyRoute />}>
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
 

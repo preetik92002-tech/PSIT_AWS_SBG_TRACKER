@@ -21,6 +21,7 @@ import { useCommunity } from '@/context/CommunityContext'
 import { supabase } from '@/lib/supabase/client'
 import { AuthProgressIndicator, ProgressStep } from '@/components/auth/AuthProgressIndicator'
 import { CommunityPreview } from '@/components/auth/CommunityPreview'
+import { AWSLogo } from '@/components/ui/AWSLogo'
 
 const ONBOARDING_STEPS: ProgressStep[] = [
   { id: 1, label: 'Account' },
@@ -271,9 +272,7 @@ export const CreateCommunity: React.FC = () => {
       {/* Top Header */}
       <header className="relative z-10 w-full border-b border-slate-200/80 bg-white/95 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#FF9900] flex items-center justify-center text-slate-950 shadow-xs font-mono font-black text-xs tracking-tighter flex-shrink-0">
-            AWS
-          </div>
+          <AWSLogo size="xs" />
           <span className="font-mono font-bold text-sm tracking-tight text-slate-900 truncate">
             AWS Journey Tracker
           </span>

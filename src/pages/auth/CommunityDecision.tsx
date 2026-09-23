@@ -8,6 +8,7 @@ import {
   Info,
 } from 'lucide-react'
 import { AuthProgressIndicator } from '@/components/auth/AuthProgressIndicator'
+import { AWSLogo } from '@/components/ui/AWSLogo'
 
 type RoleSelection = 'manager' | 'member'
 
@@ -112,9 +113,7 @@ export const CommunityDecision: React.FC = () => {
       <header className="relative z-10 w-full border-b border-slate-100 bg-white/95 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         {/* Left: AWS Logo & Title */}
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#FF9900] flex items-center justify-center text-slate-950 shadow-xs font-mono font-black text-xs tracking-tighter flex-shrink-0">
-            AWS
-          </div>
+          <AWSLogo size="xs" />
           <span className="font-mono font-bold text-sm tracking-tight text-slate-900 truncate">
             AWS Journey Tracker
           </span>

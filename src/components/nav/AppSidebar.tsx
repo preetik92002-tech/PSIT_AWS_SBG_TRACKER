@@ -8,6 +8,7 @@ import {
   FolderGit2,
   Trophy,
   Users,
+  Globe2,
   BarChart3,
   Calendar,
   Building2,
@@ -18,6 +19,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
+import { AWSLogo } from '@/components/ui/AWSLogo'
 import { useAuth } from '@/context/AuthContext'
 import { useCommunity } from '@/context/CommunityContext'
 
@@ -33,6 +35,7 @@ interface NavItem {
 const SIDEBAR_NAV: NavItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Members', to: '/members', icon: Users },
+  { label: 'Builder World', to: '/builder-world', icon: Globe2 },
   { label: 'Tasks', to: '/tasks', icon: CheckSquare },
   { label: 'Leaderboard', to: '/leaderboard', icon: Trophy },
   { label: 'Events', to: '/events', icon: Calendar },
@@ -88,9 +91,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           onClick={onItemClick}
           className="flex items-center gap-2.5 overflow-hidden group"
         >
-          <div className="w-8 h-8 rounded-lg bg-[#FF9900] flex items-center justify-center text-slate-950 shadow-sm flex-shrink-0 font-black text-xs font-mono tracking-tighter">
-            AWS
-          </div>
+          <AWSLogo size="xs" variant="inverted" />
           {!collapsed && (
             <div className="min-w-0">
               <span className="font-mono font-bold text-xs tracking-tight text-white block truncate group-hover:text-[#FF9900] transition-colors">

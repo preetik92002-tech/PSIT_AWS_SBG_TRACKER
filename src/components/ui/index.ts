@@ -15,3 +15,6 @@ export { EmptyState } from './EmptyState'
 export { LoadingState, SkeletonCard, SkeletonTable } from './LoadingState'
 export { ErrorState } from './ErrorState'
 export { PageHeader } from './PageHeader'
+
+// Global Brand Asset
+export { AWSLogo } from './AWSLogo'

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Building2, MapPin, ShieldCheck, Users, Calendar } from 'lucide-react'
+import { AWSLogo } from '@/components/ui/AWSLogo'
 
 interface CommunityPreviewProps {
   name: string
@@ -33,11 +34,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
         {/* Ambient subtle glow */}
         <div className="absolute -right-8 -top-8 w-28 h-28 bg-[#FF9900]/20 rounded-full blur-xl pointer-events-none" />
 
-        {/* Banner Left: AWS Logo badge & Short Name */}
+        {/* Banner Left: AWS Logo & Short Name */}
         <div className="flex items-center gap-2.5 z-10">
-          <div className="w-8 h-8 rounded-lg bg-[#FF9900] flex items-center justify-center text-slate-950 font-mono font-black text-xs tracking-tighter shadow-sm flex-shrink-0">
-            AWS
-          </div>
+          <AWSLogo size="xs" variant="inverted" />
           <div>
             <div className="text-[10px] uppercase font-mono tracking-widest text-[#FF9900] font-semibold">
               AWS Student Chapter

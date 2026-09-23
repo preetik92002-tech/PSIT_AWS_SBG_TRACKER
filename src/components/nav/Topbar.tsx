@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase/client'
 const ROUTE_INFO: Record<string, { label: string; group: string }> = {
   '/dashboard': { label: 'Dashboard', group: 'Community' },
   '/members': { label: 'Members', group: 'Community' },
+  '/builder-world': { label: 'Builder World', group: 'Community' },
   '/tasks': { label: 'Tasks', group: 'Community' },
   '/tasks/assign': { label: 'Assign Task', group: 'Community' },
   '/leaderboard': { label: 'Leaderboard', group: 'Community' },
@@ -32,6 +33,7 @@ const ROUTE_INFO: Record<string, { label: string; group: string }> = {
   '/admin/dashboard': { label: 'Admin Dashboard', group: 'Admin' },
   '/admin/members': { label: 'Community Members', group: 'Admin' },
   '/login': { label: 'Sign In', group: 'Auth' },
+  '/signup': { label: 'Sign Up', group: 'Auth' },
   '/forgot-password': { label: 'Password Recovery', group: 'Auth' },
   '/reset-password': { label: 'Set Password', group: 'Auth' },
 }

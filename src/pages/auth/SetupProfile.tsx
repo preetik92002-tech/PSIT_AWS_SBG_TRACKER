@@ -26,6 +26,7 @@ import {
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { AuthProgressIndicator, ProgressStep } from '@/components/auth/AuthProgressIndicator'
+import { AWSLogo } from '@/components/ui/AWSLogo'
 
 const ONBOARDING_STEPS: ProgressStep[] = [
   { id: 1, label: 'Account' },
@@ -194,8 +195,14 @@ export const SetupProfile: React.FC = () => {
       setSuccessMessage('Profile saved successfully! Proceeding...')
 
       setTimeout(() => {
-        // Direct to community decision step
-        navigate('/auth/community-decision', { replace: true })
+        const savedIntent = sessionStorage.getItem('aws_onboarding_role_intent')
+        if (savedIntent === 'manager') {
+          navigate('/auth/create-community', { replace: true })
+        } else if (savedIntent === 'member') {
+          navigate('/auth/join-community', { replace: true })
+        } else {
+          navigate('/auth/community-decision', { replace: true })
+        }
       }, 700)
     } catch (err) {
       setErrorMessage(
@@ -281,9 +288,7 @@ export const SetupProfile: React.FC = () => {
       {/* Top Header */}
       <header className="relative z-10 w-full border-b border-slate-200/80 bg-white/95 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#FF9900] flex items-center justify-center text-slate-950 shadow-xs font-mono font-black text-xs tracking-tighter flex-shrink-0">
-            AWS
-          </div>
+          <AWSLogo size="xs" />
           <span className="font-mono font-bold text-sm tracking-tight text-slate-900 truncate">
             AWS Journey Tracker
           </span>
