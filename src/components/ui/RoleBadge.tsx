@@ -13,21 +13,24 @@ export const RoleBadge: React.FC<RoleBadgeProps> = ({
 }) => {
   const normalizedRole = role.toLowerCase()
 
-  let style = 'bg-slate-800/80 text-slate-300 border-slate-700/60'
-  let dotColor = 'bg-slate-400'
+  let style = 'bg-slate-100 text-slate-700 border-slate-200 font-semibold'
+  let dotColor = 'bg-slate-500'
 
-  if (normalizedRole === 'admin') {
-    style = 'bg-purple-950/40 text-purple-300 border-purple-800/50'
-    dotColor = 'bg-purple-400'
+  if (normalizedRole === 'manager') {
+    style = 'bg-amber-50 text-amber-800 border-amber-200 font-semibold'
+    dotColor = 'bg-[#FF9900]'
+  } else if (normalizedRole === 'admin') {
+    style = 'bg-purple-50 text-purple-700 border-purple-200 font-semibold'
+    dotColor = 'bg-purple-600'
   } else if (normalizedRole === 'builder') {
-    style = 'bg-amber-950/40 text-amber-300 border-amber-800/50'
-    dotColor = 'bg-amber-400'
+    style = 'bg-orange-50 text-orange-700 border-orange-200 font-semibold'
+    dotColor = 'bg-[#FF9900]'
   } else if (normalizedRole === 'leader') {
-    style = 'bg-emerald-950/40 text-emerald-300 border-emerald-800/50'
-    dotColor = 'bg-emerald-400'
+    style = 'bg-emerald-50 text-emerald-800 border-emerald-200 font-semibold'
+    dotColor = 'bg-emerald-500'
   } else if (normalizedRole === 'member') {
-    style = 'bg-blue-950/40 text-blue-300 border-blue-800/50'
-    dotColor = 'bg-blue-400'
+    style = 'bg-blue-50 text-blue-700 border-blue-200 font-semibold'
+    dotColor = 'bg-blue-500'
   }
 
   const sizeClasses =

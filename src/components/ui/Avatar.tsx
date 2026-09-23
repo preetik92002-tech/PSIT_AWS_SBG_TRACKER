@@ -17,16 +17,16 @@ const SIZE_CLASSES = {
   xl: 'w-16 h-16 text-base',
 }
 
-// Deterministic color from initials
+// Deterministic color from initials (accessible contrast pairs)
 const AVATAR_COLORS: [string, string][] = [
-  ['#7c3aed', '#4c1d95'],
-  ['#f97316', '#7c2d12'],
-  ['#22c55e', '#14532d'],
-  ['#3b82f6', '#1e3a8a'],
-  ['#ec4899', '#831843'],
-  ['#06b6d4', '#164e63'],
-  ['#eab308', '#713f12'],
-  ['#ef4444', '#7f1d1d'],
+  ['#6D28D9', '#EDE9FE'], // violet
+  ['#C2410C', '#FFEDD5'], // orange
+  ['#15803D', '#DCFCE7'], // emerald
+  ['#1D4ED8', '#DBEAFE'], // blue
+  ['#BE185D', '#FCE7F3'], // pink
+  ['#0E7490', '#CFFAFE'], // cyan
+  ['#B45309', '#FEF3C7'], // amber
+  ['#B91C1C', '#FEE2E2'], // red
 ]
 
 function getAvatarColor(initials: string): [string, string] {
@@ -46,8 +46,8 @@ export const Avatar: React.FC<AvatarProps> = ({
     <div className={cn('relative inline-flex flex-shrink-0', className)}>
       <div
         className={cn(
-          'flex items-center justify-center font-mono font-bold flex-shrink-0',
-          'border border-white/10',
+          'flex items-center justify-center font-mono font-bold flex-shrink-0 rounded-lg',
+          'border border-slate-200/80 shadow-xs',
           SIZE_CLASSES[size]
         )}
         style={{ background: bg, color: fg }}
@@ -56,7 +56,7 @@ export const Avatar: React.FC<AvatarProps> = ({
       </div>
       {online && (
         <span
-          className="absolute bottom-0 right-0 block w-2 h-2 rounded-full border border-[var(--surface)] bg-[var(--success)]"
+          className="absolute bottom-0 right-0 block w-2 h-2 rounded-full border border-white bg-emerald-500"
           style={{ bottom: '-1px', right: '-1px' }}
         />
       )}

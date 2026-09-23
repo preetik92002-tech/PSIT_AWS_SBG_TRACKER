@@ -34,3 +34,6 @@ dist-ssr
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Supabase CLI temp files
+supabase/.temp/

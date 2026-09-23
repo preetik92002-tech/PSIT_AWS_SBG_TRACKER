@@ -1,86 +1,137 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-  User,
   Mail,
-  Shield,
-  FileText,
-  Terminal,
-  ExternalLink,
   Calendar,
   CheckCircle2,
   AlertCircle,
   Edit3,
   X,
   Save,
+  Loader2,
+  Terminal,
+  ExternalLink,
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { RoleBadge } from '@/components/ui/RoleBadge'
-
-export interface ProfileData {
-  fullName: string
-  email: string
-  role: 'member' | 'admin' | 'builder' | 'leader'
-  bio: string
-  builderAlias: string
-  builderUrl: string
-  joinedDate: string
-}
-
-const INITIAL_PROFILE: ProfileData = {
-  fullName: 'Preeti Sharma',
-  email: 'preeti@builder.hub',
-  role: 'member',
-  bio: 'Cloud architecture enthusiast focusing on serverless patterns, event-driven pipelines, and distributed systems on AWS.',
-  builderAlias: 'preeti_builds',
-  builderUrl: 'https://community.aws/u/preeti_builds',
-  joinedDate: 'September 2026',
-}
+import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase/client'
 
 export const ProfileForm: React.FC = () => {
+  const { user, profile, refreshProfile } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState<ProfileData>(INITIAL_PROFILE)
-  const [persistedData, setPersistedData] = useState<ProfileData>(INITIAL_PROFILE)
+  const [isSaving, setIsSaving] = useState(false)
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const [formData, setFormData] = useState({
+    fullName: '',
+    bio: '',
+    builderAlias: '',
+    builderUrl: '',
+  })
+
+  // Populate form with real database profile
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        fullName: profile.full_name || '',
+        bio: profile.bio || '',
+        builderAlias: profile.aws_builder_alias || '',
+        builderUrl: profile.aws_builder_profile_url || '',
+      })
+    } else if (user) {
+      setFormData({
+        fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+        bio: '',
+        builderAlias: '',
+        builderUrl: '',
+      })
+    }
+  }, [profile, user])
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErrorMessage(null)
+    setFeedbackMessage(null)
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // LEVEL 2 HOOK POINT:
-    // When Supabase is connected, call:
-    // await supabase.from('profiles').update(formData).eq('id', user.id)
-    // ──────────────────────────────────────────────────────────────────────────
-    setPersistedData(formData)
-    setIsEditing(false)
-    setFeedbackMessage('Profile changes saved in client memory! (Supabase persistence will be attached in Level 2)')
+    if (!user) {
+      setErrorMessage('User session not found. Please log in again.')
+      return
+    }
 
-    setTimeout(() => {
-      setFeedbackMessage(null)
-    }, 5000)
+    setIsSaving(true)
+    try {
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.fullName.trim() || null,
+          bio: formData.bio.trim() || null,
+          aws_builder_alias: formData.builderAlias.trim() || null,
+          aws_builder_profile_url: formData.builderUrl.trim() || null,
+        })
+        .eq('id', user.id)
+
+      if (updateError) {
+        setErrorMessage(updateError.message)
+        setIsSaving(false)
+        return
+      }
+
+      await refreshProfile()
+      setIsEditing(false)
+      setFeedbackMessage('Profile changes saved successfully to your database account.')
+
+      setTimeout(() => {
+        setFeedbackMessage(null)
+      }, 5000)
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : 'An error occurred while saving profile changes.'
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleCancel = () => {
-    setFormData(persistedData)
+    if (profile) {
+      setFormData({
+        fullName: profile.full_name || '',
+        bio: profile.bio || '',
+        builderAlias: profile.aws_builder_alias || '',
+        builderUrl: profile.aws_builder_profile_url || '',
+      })
+    }
+    setErrorMessage(null)
     setIsEditing(false)
   }
 
-  const initials = persistedData.fullName
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Community Builder'
+  const displayEmail = profile?.email || user?.email || 'authenticated@domain.com'
+  const joinedDate = profile?.joined_at
+    ? new Date(profile.joined_at).toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+      })
+    : 'Recently Joined'
+
+  const initials = displayName
     .split(' ')
     .map((n) => n[0])
     .join('')
     .substring(0, 2)
-    .toUpperCase()
+    .toUpperCase() || 'AB'
 
   return (
     <div className="space-y-6">
-      {/* Feedback banner */}
+      {/* Feedback & Error Banners */}
       {feedbackMessage && (
         <div className="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-mono flex items-center gap-2">
           <CheckCircle2 size={15} className="text-emerald-400 flex-shrink-0" />
@@ -88,14 +139,21 @@ export const ProfileForm: React.FC = () => {
         </div>
       )}
 
+      {errorMessage && (
+        <div className="p-3.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs font-mono flex items-center gap-2">
+          <AlertCircle size={15} className="text-rose-400 flex-shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
       {/* Main Profile Card */}
-      <div className="rounded-lg border border-slate-800 bg-slate-900/60 overflow-hidden shadow-sm">
+      <div className="rounded-xl border border-slate-200/90 bg-white overflow-hidden shadow-xs">
         {/* Banner */}
-        <div className="h-28 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border-b border-slate-800 p-6 flex items-end justify-between">
+        <div className="h-28 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-200 p-6 flex items-end justify-between">
           <div className="flex items-center gap-2">
-            <RoleBadge role={persistedData.role} size="md" />
-            <span className="text-xs font-mono text-slate-400">
-              Community Identity
+            <RoleBadge role={profile?.role || 'member'} size="md" />
+            <span className="text-xs font-mono text-slate-300 font-medium">
+              Verified Identity
             </span>
           </div>
 
@@ -103,7 +161,7 @@ export const ProfileForm: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-medium text-slate-200 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#FF9900] hover:bg-[#EC7211] transition-all shadow-xs cursor-pointer"
             >
               <Edit3 size={13} />
               <span>Edit Profile</span>
@@ -113,7 +171,8 @@ export const ProfileForm: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-mono text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                disabled={isSaving}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors disabled:opacity-50"
               >
                 <X size={13} />
                 <span>Cancel</span>
@@ -126,20 +185,20 @@ export const ProfileForm: React.FC = () => {
         <div className="p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 -mt-14 mb-6">
             <div className="relative">
-              <Avatar initials={initials} size="xl" className="ring-4 ring-[#0B0F17]" />
+              <Avatar initials={initials} size="xl" className="ring-4 ring-white shadow-md" />
             </div>
             <div className="mt-2 sm:mt-8 min-w-0 flex-1">
-              <h2 className="text-xl font-bold font-mono text-slate-100 truncate">
-                {persistedData.fullName}
+              <h2 className="text-xl font-bold font-mono text-slate-900 truncate">
+                {displayName}
               </h2>
-              <div className="flex flex-wrap items-center gap-3 mt-1 text-xs font-mono text-slate-400">
+              <div className="flex flex-wrap items-center gap-3 mt-1 text-xs font-mono text-slate-500">
                 <span className="flex items-center gap-1">
                   <Mail size={12} className="text-slate-400" />
-                  {persistedData.email}
+                  {displayEmail}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar size={12} className="text-slate-400" />
-                  Member since {persistedData.joinedDate}
+                  Member since {joinedDate}
                 </span>
               </div>
             </div>
@@ -148,78 +207,82 @@ export const ProfileForm: React.FC = () => {
           {/* Form / Details */}
           {!isEditing ? (
             /* Read-only view */
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800/80">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">
                     Full Name
                   </label>
-                  <p className="text-sm font-mono text-slate-200">
-                    {persistedData.fullName}
+                  <p className="text-sm font-mono text-slate-800">
+                    {profile?.full_name || '—'}
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">
                     Email Address
                   </label>
-                  <p className="text-sm font-mono text-slate-200">
-                    {persistedData.email}
+                  <p className="text-sm font-mono text-slate-800">
+                    {displayEmail}
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">
                     Community Role
                   </label>
                   <div className="mt-0.5">
-                    <RoleBadge role={persistedData.role} size="sm" />
+                    <RoleBadge role={profile?.role || 'member'} size="sm" />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">
                     AWS Builder Alias
                   </label>
-                  <p className="text-sm font-mono text-amber-400/90 flex items-center gap-1">
+                  <p className="text-sm font-mono text-[#FF9900] flex items-center gap-1 font-semibold">
                     <Terminal size={13} />
-                    @{persistedData.builderAlias}
+                    {profile?.aws_builder_alias ? `@${profile.aws_builder_alias}` : 'Not connected'}
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">
                     AWS Builder Profile URL
                   </label>
-                  <a
-                    href={persistedData.builderUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm font-mono text-amber-400 hover:text-amber-300 underline inline-flex items-center gap-1 transition-colors"
-                  >
-                    <span>{persistedData.builderUrl}</span>
-                    <ExternalLink size={12} />
-                  </a>
+                  {profile?.aws_builder_profile_url ? (
+                    <a
+                      href={profile.aws_builder_profile_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-mono text-[#FF9900] hover:text-[#EC7211] underline inline-flex items-center gap-1 transition-colors truncate max-w-full"
+                    >
+                      <span className="truncate">{profile.aws_builder_profile_url}</span>
+                      <ExternalLink size={12} className="flex-shrink-0" />
+                    </a>
+                  ) : (
+                    <p className="text-sm font-mono text-slate-400">Not provided</p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1">
                     Bio
                   </label>
-                  <p className="text-sm text-slate-300 leading-relaxed font-sans">
-                    {persistedData.bio}
+                  <p className="text-sm text-slate-700 leading-relaxed font-sans">
+                    {profile?.bio || 'No bio provided yet.'}
                   </p>
                 </div>
               </div>
             </div>
           ) : (
             /* Editing form */
-            <form onSubmit={handleSave} className="space-y-5 pt-4 border-t border-slate-800">
+            <form onSubmit={handleSave} className="space-y-5 pt-4 border-t border-slate-150">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-medium">
                     Full Name
                   </label>
                   <input
@@ -227,31 +290,31 @@ export const ProfileForm: React.FC = () => {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
+                    disabled={isSaving}
                     required
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-750 text-slate-100 text-sm font-mono focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors disabled:opacity-50"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-medium">
                     Email Address
                   </label>
                   <input
                     type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-750 text-slate-100 text-sm font-mono focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                    value={displayEmail}
+                    disabled
+                    title="Email address is managed by Supabase Authentication"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-sm font-mono cursor-not-allowed"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-medium">
                     AWS Builder Alias
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-500 font-mono text-sm">
+                    <span className="absolute left-3 top-2.5 text-slate-400 font-mono text-sm">
                       @
                     </span>
                     <input
@@ -259,14 +322,15 @@ export const ProfileForm: React.FC = () => {
                       name="builderAlias"
                       value={formData.builderAlias}
                       onChange={handleChange}
+                      disabled={isSaving}
                       placeholder="alias"
-                      className="w-full pl-7 pr-3 py-2 rounded-md bg-slate-950 border border-slate-750 text-slate-100 text-sm font-mono focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                      className="w-full pl-7 pr-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors disabled:opacity-50"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-medium">
                     AWS Builder Profile URL
                   </label>
                   <input
@@ -274,13 +338,14 @@ export const ProfileForm: React.FC = () => {
                     name="builderUrl"
                     value={formData.builderUrl}
                     onChange={handleChange}
+                    disabled={isSaving}
                     placeholder="https://community.aws/u/username"
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-750 text-slate-100 text-sm font-mono focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors disabled:opacity-50"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-medium">
                     Bio
                   </label>
                   <textarea
@@ -288,26 +353,38 @@ export const ProfileForm: React.FC = () => {
                     rows={3}
                     value={formData.bio}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-md bg-slate-950 border border-slate-750 text-slate-100 text-sm font-sans focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                    disabled={isSaving}
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-sans focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors disabled:opacity-50"
                   />
                 </div>
               </div>
 
               {/* Form Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="px-4 py-2 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                  disabled={isSaving}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-mono font-medium text-slate-900 bg-amber-500 hover:bg-amber-400 transition-colors shadow-sm cursor-pointer"
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-[#FF9900] hover:bg-[#EC7211] transition-colors shadow-xs cursor-pointer disabled:opacity-50"
                 >
-                  <Save size={13} />
-                  <span>Save Changes</span>
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={13} />
+                      <span>Save Changes</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

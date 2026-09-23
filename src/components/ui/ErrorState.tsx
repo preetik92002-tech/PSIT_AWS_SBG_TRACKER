@@ -18,22 +18,22 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-lg border border-rose-900/40 bg-rose-950/20 p-6 text-center ${className}`}
+      className={`rounded-xl border border-rose-200 bg-rose-50/80 p-6 text-center shadow-xs ${className}`}
     >
-      <div className="w-10 h-10 mx-auto rounded-full bg-rose-900/30 border border-rose-700/50 flex items-center justify-center text-rose-400 mb-3">
+      <div className="w-10 h-10 mx-auto rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 mb-3">
         <AlertTriangle size={20} />
       </div>
 
-      <h3 className="text-sm font-semibold font-mono text-rose-200 mb-1">
+      <h3 className="text-sm font-semibold font-mono text-rose-900 mb-1">
         {title}
       </h3>
 
-      <p className="text-xs text-rose-300/80 max-w-md mx-auto mb-4 font-sans">
+      <p className="text-xs text-rose-700 max-w-md mx-auto mb-4 font-sans leading-relaxed">
         {message}
       </p>
 
       {code && (
-        <div className="inline-block px-2.5 py-1 mb-4 rounded bg-rose-950/80 border border-rose-900/60 font-mono text-[11px] text-rose-300">
+        <div className="inline-block px-2.5 py-1 mb-4 rounded-md bg-white border border-rose-200 font-mono text-[11px] text-rose-800 shadow-xs">
           Error code: {code}
         </div>
       )}
@@ -43,7 +43,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-mono font-medium bg-rose-900/40 hover:bg-rose-900/60 text-rose-200 border border-rose-800/60 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#FF9900] hover:bg-[#EC7211] text-white shadow-xs transition-all cursor-pointer"
           >
             <RefreshCw size={12} />
             <span>Retry Connection</span>

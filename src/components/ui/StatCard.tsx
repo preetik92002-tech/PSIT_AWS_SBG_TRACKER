@@ -23,51 +23,47 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className={`rounded-lg border border-slate-800/80 bg-slate-900/60 p-5 shadow-sm transition-all hover:border-slate-700/80 ${className}`}
-      style={{
-        background: 'linear-gradient(180deg, rgba(17, 24, 39, 0.75) 0%, rgba(15, 23, 42, 0.65) 100%)',
-      }}
+      className={`rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-slate-300 hover:shadow-sm ${className}`}
     >
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-400 font-mono">
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1 min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 font-mono truncate">
             {title}
           </p>
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 flex-wrap">
             <span
-              className={`text-2xl font-bold tracking-tight font-mono ${
-                isDisconnected ? 'text-slate-400 text-lg' : 'text-slate-100'
+              className={`text-xl sm:text-2xl font-bold tracking-tight font-mono ${
+                isDisconnected ? 'text-slate-400 text-base' : 'text-slate-900'
               }`}
             >
               {value}
             </span>
             {statusLabel && (
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
                   status === 'disconnected'
-                    ? 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                    ? 'border-amber-200 text-amber-800 bg-amber-50'
                     : status === 'coming-soon'
-                    ? 'border-slate-700 text-slate-400 bg-slate-800/50'
-                    : 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+                    ? 'border-slate-200 text-slate-500 bg-slate-100'
+                    : 'border-emerald-200 text-emerald-800 bg-emerald-50'
                 }`}
               >
                 {statusLabel}
               </span>
             )}
           </div>
+          {subtitle && (
+            <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+              {subtitle}
+            </p>
+          )}
         </div>
         {icon && (
-          <div className="p-2.5 rounded-md bg-slate-800/60 border border-slate-700/40 text-slate-300">
+          <div className="p-2 sm:p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-slate-600 flex-shrink-0">
             {icon}
           </div>
         )}
       </div>
-
-      {subtitle && (
-        <p className="mt-3 text-xs text-slate-400 flex items-center gap-1.5 font-sans">
-          {subtitle}
-        </p>
-      )}
     </div>
   )
 }

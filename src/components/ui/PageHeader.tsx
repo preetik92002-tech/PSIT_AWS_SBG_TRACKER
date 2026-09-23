@@ -27,9 +27,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`border-b border-slate-800/80 pb-5 mb-6 ${className}`}>
+    <div className={`border-b border-slate-200/90 pb-5 mb-6 ${className}`}>
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 font-mono mb-2.5">
+        <nav className="flex items-center gap-1.5 text-xs text-slate-500 font-mono mb-2.5">
           {breadcrumbs.map((crumb, idx) => {
             const isLast = idx === breadcrumbs.length - 1
             return (
@@ -37,17 +37,17 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 {crumb.to && !isLast ? (
                   <Link
                     to={crumb.to}
-                    className="hover:text-slate-200 transition-colors"
+                    className="hover:text-slate-900 transition-colors"
                   >
                     {crumb.label}
                   </Link>
                 ) : (
-                  <span className={isLast ? 'text-slate-300 font-medium' : ''}>
+                  <span className={isLast ? 'text-slate-800 font-semibold' : ''}>
                     {crumb.label}
                   </span>
                 )}
                 {!isLast && (
-                  <ChevronRight size={12} className="text-slate-500" />
+                  <ChevronRight size={12} className="text-slate-400" />
                 )}
               </React.Fragment>
             )
@@ -58,23 +58,23 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           {icon && (
-            <div className="w-10 h-10 rounded-lg bg-slate-850 border border-slate-750 flex items-center justify-center text-amber-500 shadow-sm flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200/80 flex items-center justify-center text-[#FF9900] shadow-xs flex-shrink-0">
               {icon}
             </div>
           )}
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-100">
+              <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900">
                 {title}
               </h1>
               {tag && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-slate-800 text-amber-400/90 border border-slate-700">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200 font-semibold">
                   {tag}
                 </span>
               )}
             </div>
             {subtitle && (
-              <p className="text-xs sm:text-sm text-slate-400 mt-1 font-sans">
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 font-sans">
                 {subtitle}
               </p>
             )}
