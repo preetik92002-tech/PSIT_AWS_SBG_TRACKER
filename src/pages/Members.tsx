@@ -371,6 +371,11 @@ export const Members: React.FC = () => {
         prev.map((item) => (item.membershipId === m.membershipId ? { ...item, role: newRole } : item))
       )
       setActionMenuOpenId(null)
+    } catch (err) {
+      console.error('Failed to update role', err)
+    }
+  }
+
   // Remove member from community (manager action with confirmation modal)
   const handleConfirmRemove = async () => {
     if (!memberToRemove || !isManager) return

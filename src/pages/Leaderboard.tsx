@@ -501,6 +501,11 @@ export const Leaderboard: React.FC = () => {
                                 <span className={`font-semibold ${isCurrentUser ? 'text-[#EA580C]' : 'text-slate-900'}`}>
                                   {b.fullName}
                                 </span>
+                                {b.role === 'manager' && (
+                                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-[#EA580C] border border-amber-500/20 font-bold flex items-center gap-0.5">
+                                    👑 Manager
+                                  </span>
+                                )}
                                 {isCurrentUser && (
                                   <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#EA580C] text-white font-bold">
                                     YOU

@@ -29,6 +29,9 @@ import { Projects } from '@/pages/Projects'
 import { AdminDashboard } from '@/pages/AdminDashboard'
 import { AdminMembers } from '@/pages/AdminMembers'
 import { BuilderWorldPage } from '@/pages/BuilderWorldPage'
+import { Community } from '@/pages/Community'
+import { Analytics } from '@/pages/Analytics'
+import { Notifications } from '@/pages/Notifications'
 
 export function App() {
   return (
@@ -74,6 +77,9 @@ export function App() {
                 <Route path="projects" element={<Projects />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="builder-world" element={<BuilderWorldPage />} />
+                <Route path="community" element={<Community />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="notifications" element={<Notifications />} />
 
                 {/* Legacy redirect for bookmark compatibility */}
                 <Route path="admin/members" element={<Navigate to="/members" replace />} />

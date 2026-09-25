@@ -88,13 +88,15 @@ export const ProfileForm: React.FC = () => {
   useEffect(() => {
     if (!user) return
 
+    const currentUserId = user.id
+
     async function loadUserData() {
       try {
         // Query tasks assigned and completed
         const { data: assignments } = await supabase
           .from('community_task_assignments')
           .select('status, community_tasks(points)')
-          .eq('user_id', user.id)
+          .eq('user_id', currentUserId)
 
         if (assignments) {
           let totalXp = 0
@@ -114,7 +116,7 @@ export const ProfileForm: React.FC = () => {
         const { data: acts } = await supabase
           .from('community_activities')
           .select('id, description, activity_type, created_at')
-          .eq('user_id', user.id)
+          .eq('user_id', currentUserId)
           .order('created_at', { ascending: false })
           .limit(8)
 
