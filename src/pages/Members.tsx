@@ -608,8 +608,8 @@ export const Members: React.FC = () => {
                         <div className="font-semibold text-slate-900 group-hover:text-[#EA580C] transition-colors flex items-center gap-1.5">
                           <span>{m.fullName}</span>
                           {m.role === 'manager' && (
-                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-orange-100 text-[#EA580C] font-bold">
-                              HEAD
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-[#EA580C] border border-amber-500/20 font-bold flex items-center gap-0.5">
+                              👑 Manager
                             </span>
                           )}
                         </div>
@@ -717,6 +717,16 @@ export const Members: React.FC = () => {
                                   >
                                     {m.status === 'active' ? 'Set Inactive' : 'Set Active'}
                                   </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setMemberToRemove(m)
+                                      setActionMenuOpenId(null)
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 block font-medium"
+                                  >
+                                    Remove from community
+                                  </button>
                                 </>
                               )}
 
@@ -763,8 +773,8 @@ export const Members: React.FC = () => {
                       <div className="text-sm font-bold text-slate-900 font-sans flex items-center gap-1.5">
                         <span>{m.fullName}</span>
                         {m.role === 'manager' && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-orange-100 text-[#EA580C] font-bold">
-                            HEAD
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-[#EA580C] border border-amber-500/20 font-bold flex items-center gap-0.5">
+                            👑 Manager
                           </span>
                         )}
                       </div>
@@ -850,6 +860,43 @@ export const Members: React.FC = () => {
         onMemberAdded={fetchCommunityMembers}
         isManager={isManager}
       />
+
+      {/* Remove Member Confirmation Dialog */}
+      <Modal
+        isOpen={!!memberToRemove}
+        onClose={() => setMemberToRemove(null)}
+        title="Remove Member?"
+        subtitle="Community Management Authority"
+        size="sm"
+      >
+        <div className="p-5 space-y-4">
+          <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-mono">
+            Are you sure you want to remove <span className="font-bold">{memberToRemove?.fullName}</span> from {activeCommunity?.name}?
+          </div>
+          <p className="text-xs text-slate-600 font-sans leading-relaxed">
+            This will remove this member from your community chapter. Their account will remain available and they can join another community.
+          </p>
+
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={() => setMemberToRemove(null)}
+              disabled={isRemoving}
+              className="px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmRemove}
+              disabled={isRemoving}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+            >
+              {isRemoving ? 'Removing...' : 'Confirm Removal'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
