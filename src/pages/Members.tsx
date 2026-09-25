@@ -371,8 +371,31 @@ export const Members: React.FC = () => {
         prev.map((item) => (item.membershipId === m.membershipId ? { ...item, role: newRole } : item))
       )
       setActionMenuOpenId(null)
+  // Remove member from community (manager action with confirmation modal)
+  const handleConfirmRemove = async () => {
+    if (!memberToRemove || !isManager) return
+    setIsRemoving(true)
+    try {
+      const { error } = await supabase
+        .from('community_members')
+        .delete()
+        .eq('id', memberToRemove.membershipId)
+
+      if (error) {
+        console.warn('Direct delete restricted, setting status to inactive:', error.message)
+        await supabase
+          .from('community_members')
+          .update({ status: 'inactive', updated_at: new Date().toISOString() })
+          .eq('id', memberToRemove.membershipId)
+      }
+
+      setMembers((prev) => prev.filter((item) => item.membershipId !== memberToRemove.membershipId))
+      setMemberToRemove(null)
     } catch (err) {
-      console.error('Failed to update role', err)
+      console.error('Failed to remove member from community', err)
+      setMemberToRemove(null)
+    } finally {
+      setIsRemoving(false)
     }
   }
 
