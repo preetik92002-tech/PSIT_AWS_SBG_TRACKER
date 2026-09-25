@@ -333,25 +333,23 @@ export const BuilderWorldPage: React.FC = () => {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="space-y-4">
 
       {/* Page header */}
       <div
-        className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border flex-shrink-0"
-        style={{ borderColor: 'var(--border-subtle)' }}
+        className="flex items-center justify-between px-4 pt-4 pb-3 rounded-lg border border-slate-200 bg-white"
       >
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 flex items-center justify-center"
-            style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent)' }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-500/10 border border-amber-500/30 text-[#EA580C]"
           >
-            <Globe2 size={15} style={{ color: 'var(--accent-bright)' }} />
+            <Globe2 size={16} />
           </div>
           <div>
-            <h1 className="font-mono font-bold text-sm text-text-primary tracking-tight">
+            <h1 className="font-mono font-bold text-sm text-slate-900 tracking-tight">
               BUILDER WORLD
             </h1>
-            <p className="font-mono text-[10px] text-text-muted">
+            <p className="font-mono text-[10px] text-slate-500">
               {activeCommunity?.name ?? 'Community'} ·{' '}
               {new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
             </p>
@@ -359,19 +357,19 @@ export const BuilderWorldPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-2 py-1 bg-surface-secondary border border-border">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-slow" />
-            <span className="font-mono text-[10px] text-text-secondary">LIVE</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-mono text-[10px] text-slate-700 font-semibold">LIVE</span>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 bg-surface-secondary border border-border">
-            <Radio size={10} className="text-accent-secondary" />
-            <span className="font-mono text-[10px] text-text-muted">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200">
+            <Radio size={11} className="text-[#EA580C]" />
+            <span className="font-mono text-[10px] text-slate-500">
               {hud.activeThisWeek} active this week
             </span>
           </div>
           <button
             onClick={loadWorldData}
-            className="p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-surface-secondary border border-border transition-colors"
+            className="p-1.5 rounded text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
             title="Refresh"
           >
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
@@ -379,9 +377,8 @@ export const BuilderWorldPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-4">
+      {/* Content */}
+      <div className="space-y-4">
 
           {/* Error banner */}
           {error && (
@@ -647,7 +644,6 @@ export const BuilderWorldPage: React.FC = () => {
           </motion.div>
 
         </div>
-      </div>
 
       {/* Member Profile Modal */}
       <Modal

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { RoleBadge } from '@/components/ui/RoleBadge'
+import { AWSLogo } from '@/components/ui/AWSLogo'
 import { CommunitySelector } from '@/components/nav/CommunitySelector'
 import { useAuth } from '@/context/AuthContext'
 import { useCommunity } from '@/context/CommunityContext'
@@ -124,32 +125,37 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
 
   return (
     <header
-      className={`h-14 border-b border-slate-200/90 bg-white/95 backdrop-blur-md px-4 flex items-center justify-between z-20 flex-shrink-0 text-slate-800 shadow-xs ${className}`}
+      className={`h-14 border-b border-slate-200/90 bg-white/95 backdrop-blur-md px-3 sm:px-4 flex items-center justify-between z-20 flex-shrink-0 text-slate-800 shadow-2xs gap-2 ${className}`}
     >
-      {/* Left side: Mobile Toggle + Breadcrumb */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Left side: Mobile Toggle + AWS Brand + Breadcrumbs */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           type="button"
           onClick={onOpenMobileNav}
-          className="md:hidden w-8 h-8 flex items-center justify-center rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors"
+          className="md:hidden w-8 h-8 flex items-center justify-center rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors flex-shrink-0 cursor-pointer"
           aria-label="Open mobile navigation"
         >
           <Menu size={16} />
         </button>
 
-        <div className="flex items-center gap-1.5 font-mono text-xs text-slate-500 min-w-0">
-          <span className="hidden sm:inline-block text-slate-500">
-            {info.group}
+        {/* Mobile & Desktop Brand Display */}
+        <Link to="/dashboard" className="flex items-center gap-2 flex-shrink-0 group">
+          <AWSLogo size="xs" />
+          <span className="font-mono font-bold text-xs tracking-tight text-slate-900 group-hover:text-[#FF9900] transition-colors hidden xs:inline sm:hidden">
+            Journey Tracker
           </span>
-          <ChevronRight size={11} className="hidden sm:inline-block text-slate-400 flex-shrink-0" />
-          <span className="text-slate-900 font-semibold truncate">
-            {info.label}
-          </span>
+        </Link>
+
+        {/* Desktop Breadcrumb */}
+        <div className="hidden md:flex items-center gap-1.5 font-mono text-xs text-slate-400 min-w-0 pl-1 border-l border-slate-200">
+          <span className="text-slate-500">{info.group}</span>
+          <ChevronRight size={11} className="text-slate-400 flex-shrink-0" />
+          <span className="text-slate-900 font-semibold truncate">{info.label}</span>
         </div>
       </div>
 
       {/* Center: Community Selector */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1 md:flex-initial justify-center md:justify-start">
         <CommunitySelector />
       </div>
 
@@ -225,13 +231,13 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
             aria-expanded={dropdownOpen}
             aria-haspopup="true"
           >
-            <Avatar initials={initials} size="sm" />
+            <Avatar initials={initials} src={profile?.avatar_url} size="sm" />
             <div className="hidden lg:block text-left max-w-[140px]">
               <span className="block text-xs font-mono font-medium text-slate-800 truncate group-hover:text-[#EA580C] transition-colors">
                 {displayName}
               </span>
-              <span className="block text-[10px] font-mono text-slate-500 truncate">
-                {userRoleInActiveCommunity === 'manager' ? 'Community Manager' : 'Community Member'}
+              <span className="block text-[10px] font-mono text-slate-500 truncate flex items-center gap-1">
+                {userRoleInActiveCommunity === 'manager' ? '👑 Manager' : 'Community Member'}
               </span>
             </div>
             <ChevronDown size={12} className="text-slate-400 group-hover:text-slate-600 transition-colors" />

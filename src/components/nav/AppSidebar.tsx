@@ -95,10 +95,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           {!collapsed && (
             <div className="min-w-0">
               <span className="font-mono font-bold text-xs tracking-tight text-white block truncate group-hover:text-[#FF9900] transition-colors">
-                AWS Journey Tracker
+                Journey Tracker
               </span>
               <span className="text-[10px] font-mono text-slate-400 block -mt-0.5 truncate">
-                {activeCommunity ? activeCommunity.name : 'Community Platform'}
+                {activeCommunity ? activeCommunity.name : 'Learn. Connect. Grow.'}
               </span>
             </div>
           )}
@@ -164,14 +164,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       <div className="border-t border-slate-800/80 p-2.5 bg-[#080B11]/60">
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between gap-2'}`}>
           <div className="flex items-center gap-2.5 min-w-0">
-            <Avatar initials={initials} size="sm" />
+            <Avatar initials={initials} src={profile?.avatar_url} size="sm" />
             {!collapsed && (
               <div className="min-w-0">
                 <span className="block text-xs font-mono font-medium text-slate-200 truncate leading-snug">
                   {displayName}
                 </span>
-                <span className="block text-[10px] font-mono text-slate-500 truncate">
-                  {isManager ? 'Community Manager' : 'Community Member'}
+                <span className="block text-[10px] font-mono text-slate-400 truncate flex items-center gap-1">
+                  {isManager ? '👑 Manager' : 'Community Member'}
                 </span>
               </div>
             )}

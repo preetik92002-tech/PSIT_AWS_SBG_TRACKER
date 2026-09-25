@@ -1,16 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   Users,
   ChevronDown,
   Plus,
   KeyRound,
   Check,
-  Building,
+  Building2,
 } from 'lucide-react'
 import { useCommunity } from '@/context/CommunityContext'
 
-export const CommunitySelector: React.FC = () => {
+export interface CommunitySelectorProps {
+  compact?: boolean
+  className?: string
+}
+
+export const CommunitySelector: React.FC<CommunitySelectorProps> = ({
+  compact = false,
+  className = '',
+}) => {
   const navigate = useNavigate()
   const {
     userCommunities,
@@ -34,50 +40,56 @@ export const CommunitySelector: React.FC = () => {
   }, [])
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${className}`} ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-xs transition-all text-left group cursor-pointer"
+        className={`flex items-center gap-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200/90 hover:border-slate-300 transition-all text-left group cursor-pointer ${
+          compact ? 'px-2 py-1' : 'px-2.5 py-1.5'
+        }`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <div className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[#EA580C] flex-shrink-0">
-          <Users size={13} />
+        <div className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-[#EA580C] flex-shrink-0">
+          <Building2 size={13} />
         </div>
 
-        <div className="min-w-0 max-w-[160px] sm:max-w-[220px]">
+        <div className={`min-w-0 ${compact ? 'max-w-[110px] sm:max-w-[140px]' : 'max-w-[160px] md:max-w-[220px] lg:max-w-[280px]'}`}>
           {isLoading ? (
             <span className="text-xs text-slate-400 font-mono">Loading...</span>
           ) : activeCommunity ? (
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold text-slate-900 truncate group-hover:text-[#EA580C] transition-colors">
-                {activeCommunity.name}
-              </span>
-              <span
-                className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold uppercase tracking-wider flex-shrink-0 ${
-                  activeCommunity.role === 'manager'
-                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                    : 'bg-slate-100 text-slate-700 border border-slate-200'
-                }`}
-              >
-                {activeCommunity.role}
-              </span>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-slate-900 truncate group-hover:text-[#EA580C] transition-colors leading-tight">
+                  {activeCommunity.name}
+                </span>
+                {!compact && (
+                  <span
+                    className={`text-[9px] font-mono px-1 py-0.2 rounded font-semibold uppercase tracking-wider flex-shrink-0 ${
+                      activeCommunity.role === 'manager'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : 'bg-slate-100 text-slate-600 border border-slate-200'
+                    }`}
+                  >
+                    {activeCommunity.role === 'manager' ? '👑 Head' : 'Member'}
+                  </span>
+                )}
+              </div>
+              {!compact && activeCommunity.institution_name && (
+                <span className="block text-[10px] font-mono text-slate-400 truncate -mt-0.5">
+                  {activeCommunity.institution_name}
+                </span>
+              )}
             </div>
           ) : (
             <span className="text-xs font-medium text-slate-500 italic">
-              Select / Join Community
-            </span>
-          )}
-          {activeCommunity?.institution_name && (
-            <span className="block text-[10px] text-slate-500 truncate -mt-0.5">
-              {activeCommunity.institution_name}
+              Select Community
             </span>
           )}
         </div>
 
         <ChevronDown
-          size={13}
+          size={12}
           className={`text-slate-400 group-hover:text-slate-600 transition-transform flex-shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}

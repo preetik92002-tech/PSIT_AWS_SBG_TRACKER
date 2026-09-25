@@ -115,10 +115,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             <AWSLogo size="sm" />
             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold tracking-widest text-[#FF9900] leading-tight">
-                Amazon Web Services
+                Student Builder Hub
               </span>
               <span className="text-base font-bold text-[#0F172A] tracking-tight group-hover:text-[#FF9900] transition-colors leading-snug">
-                AWS Journey Tracker
+                Journey Tracker
               </span>
             </div>
           </Link>

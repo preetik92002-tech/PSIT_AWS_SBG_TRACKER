@@ -115,7 +115,7 @@ export const CommunityDecision: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <AWSLogo size="xs" />
           <span className="font-mono font-bold text-sm tracking-tight text-slate-900 truncate">
-            AWS Journey Tracker
+            Journey Tracker
           </span>
         </div>
 

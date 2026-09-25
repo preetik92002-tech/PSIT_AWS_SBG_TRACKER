@@ -218,11 +218,12 @@ export const BuilderWorld: React.FC<BuilderWorldProps> = ({
     isDragging.current = false
   }, [])
 
-  // ── Zoom ─────────────────────────────────────────────────────────────────
-
+  // ── Zoom (Ctrl+wheel or buttons, allowing natural page scrolling) ────────
   const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault()
-    setScale((s) => clamp(s * (e.deltaY > 0 ? 0.9 : 1.1), 0.4, 2.2))
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault()
+      setScale((s) => clamp(s * (e.deltaY > 0 ? 0.9 : 1.1), 0.4, 2.2))
+    }
   }, [])
 
   const zoom = (dir: 1 | -1) =>
@@ -454,7 +455,7 @@ export const BuilderWorld: React.FC<BuilderWorldProps> = ({
           pointerEvents: 'none',
         }}
       >
-        {(scale * 100).toFixed(0)}% · scroll to zoom · drag to pan
+        {(scale * 100).toFixed(0)}% · Ctrl+scroll or buttons to zoom · drag to pan
       </div>
 
       {/* Top-right: visible count */}
