@@ -26,6 +26,7 @@ import { RoleBadge } from '@/components/ui/RoleBadge'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AddMemberModal } from '@/components/members/AddMemberModal'
+import { Modal } from '@/components/ui/Modal'
 
 export interface CommunityMemberRow {
   membershipId: string
@@ -65,6 +66,8 @@ export const Members: React.FC = () => {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [actionMenuOpenId, setActionMenuOpenId] = useState<string | null>(null)
+  const [memberToRemove, setMemberToRemove] = useState<CommunityMemberRow | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   const isManager = userRoleInActiveCommunity === 'manager'
 
