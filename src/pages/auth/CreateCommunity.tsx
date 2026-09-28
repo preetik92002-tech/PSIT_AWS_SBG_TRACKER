@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users,
@@ -15,20 +15,36 @@ import {
   ShieldCheck,
   Sparkles,
   Link as LinkIcon,
+  Upload,
+  Camera,
+  AlertTriangle,
+  Eye,
+  QrCode,
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useCommunity } from '@/context/CommunityContext'
 import { supabase } from '@/lib/supabase/client'
 import { AuthProgressIndicator, ProgressStep } from '@/components/auth/AuthProgressIndicator'
-import { CommunityPreview } from '@/components/auth/CommunityPreview'
 import { AWSLogo } from '@/components/ui/AWSLogo'
+import { CommunityImage } from '@/components/ui/CommunityImage'
+import { ShareCommunityModal } from '@/components/community/ShareCommunityModal'
+import { trackEvent } from '@/utils/analytics'
 
 const ONBOARDING_STEPS: ProgressStep[] = [
   { id: 1, label: 'Account' },
-  { id: 2, label: 'Profile' },
-  { id: 3, label: 'Community' },
-  { id: 4, label: 'Finish' },
+  { id: 2, label: 'Role' },
+  { id: 3, label: 'Profile' },
+  { id: 4, label: 'Community' },
 ]
+
+interface ExistingCommunityMatch {
+  id: string
+  name: string
+  short_name: string
+  institution: string
+  city: string
+  logo_url?: string | null
+}
 
 export const CreateCommunity: React.FC = () => {
   const navigate = useNavigate()
@@ -41,9 +57,14 @@ export const CreateCommunity: React.FC = () => {
   const [institution, setInstitution] = useState(profile?.institution_name || '')
   const [city, setCity] = useState(profile?.institution_address?.split(',')?.[0]?.trim() || '')
   const [description, setDescription] = useState('')
+  const [communityImage, setCommunityImage] = useState<string | null>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  // Duplicate community detection state
+  const [existingCommunityMatch, setExistingCommunityMatch] = useState<ExistingCommunityMatch | null>(null)
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false)
 
   // Success state with created community details
   const [createdCommunity, setCreatedCommunity] = useState<{
@@ -54,12 +75,63 @@ export const CreateCommunity: React.FC = () => {
     city: string
     description: string
     code: string
+    imageUrl: string | null
     memberCount: number
     createdDate: string
   } | null>(null)
 
-  const [copiedLink, setCopiedLink] = useState(false)
-  const [shared, setShared] = useState(false)
+  const [copiedCode, setCopiedCode] = useState(false)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [showQrCode, setShowQrCode] = useState(false)
+
+  // Check for duplicate institution whenever institution name changes
+  useEffect(() => {
+    const inst = institution.trim()
+    if (inst.length < 3) {
+      setExistingCommunityMatch(null)
+      return
+    }
+
+    let isCurrent = true
+    const checkDuplicate = async () => {
+      setIsCheckingDuplicate(true)
+      try {
+        const { data, error } = await supabase
+          .from('communities')
+          .select('id, name, short_name, institution, city, logo_url')
+          .ilike('institution', `%${inst}%`)
+          .limit(1)
+
+        if (!isCurrent) return
+        if (!error && data && data.length > 0) {
+          setExistingCommunityMatch(data[0])
+        } else {
+          setExistingCommunityMatch(null)
+        }
+      } catch {
+        if (isCurrent) setExistingCommunityMatch(null)
+      } finally {
+        if (isCurrent) setIsCheckingDuplicate(false)
+      }
+    }
+
+    const timer = setTimeout(checkDuplicate, 400)
+    return () => {
+      isCurrent = false
+      clearTimeout(timer)
+    }
+  }, [institution])
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setCommunityImage(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,37 +142,38 @@ export const CreateCommunity: React.FC = () => {
       return
     }
 
-    // Required fields validation
     if (!name.trim()) {
       setErrorMessage('Community name is required.')
       return
     }
-
     if (!shortName.trim()) {
       setErrorMessage('Community short name is required.')
       return
     }
-
     if (!institution.trim()) {
-      setErrorMessage('Institution is required.')
+      setErrorMessage('Institution name is required.')
       return
     }
-
     if (!city.trim()) {
       setErrorMessage('City is required.')
       return
     }
-
     if (!description.trim()) {
       setErrorMessage('Community description is required.')
       return
     }
 
+    // Duplicate check confirmation
+    if (existingCommunityMatch) {
+      setErrorMessage('An official community already exists for this institution. Please join the existing community tracker.')
+      return
+    }
+
     setIsSubmitting(true)
+    trackEvent('create_community_clicked', { institution, shortName })
+
     try {
       // 1. Insert community record into Supabase
-      // NOTE: Database trigger automatically enrolls user as 'manager' in community_members
-      // and generates the secure community invite code. profiles.role is NOT modified.
       const { data: newComm, error: commErr } = await supabase
         .from('communities')
         .insert({
@@ -110,6 +183,7 @@ export const CreateCommunity: React.FC = () => {
           institution_name: institution.trim(),
           city: city.trim(),
           description: description.trim(),
+          logo_url: communityImage,
           manager_id: user.id,
           created_by: user.id,
         })
@@ -122,7 +196,7 @@ export const CreateCommunity: React.FC = () => {
         return
       }
 
-      // 2. Fetch the automatically generated secure community code from community_codes
+      // 2. Fetch the generated invite code from community_codes
       const { data: codeRecord } = await supabase
         .from('community_codes')
         .select('code')
@@ -130,11 +204,7 @@ export const CreateCommunity: React.FC = () => {
         .eq('active', true)
         .maybeSingle()
 
-      // 3. Query actual database membership count from community_members (NO FAKE COUNT)
-      const { count: actualMemberCount } = await supabase
-        .from('community_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('community_id', newComm.id)
+      const generatedCode = codeRecord?.code || `${shortName.trim().toUpperCase()}-AWS-${new Date().getFullYear()}`
 
       const formattedDate = new Date(newComm.created_at).toLocaleDateString('en-US', {
         month: 'short',
@@ -149,8 +219,9 @@ export const CreateCommunity: React.FC = () => {
         institution: newComm.institution,
         city: newComm.city,
         description: newComm.description || '',
-        code: codeRecord?.code || 'ACTIVE',
-        memberCount: actualMemberCount ?? 1,
+        code: generatedCode,
+        imageUrl: communityImage,
+        memberCount: 1,
         createdDate: formattedDate,
       })
 
@@ -166,375 +237,414 @@ export const CreateCommunity: React.FC = () => {
     }
   }
 
-  const getInviteLink = () => {
-    if (!createdCommunity) return ''
-    return `${window.location.origin}/auth/join-community?code=${createdCommunity.code}`
-  }
-
-  const handleCopyInviteLink = () => {
+  const handleCopyCode = async () => {
     if (!createdCommunity) return
-    const inviteLink = getInviteLink()
-    navigator.clipboard.writeText(inviteLink)
-    setCopiedLink(true)
-    setTimeout(() => setCopiedLink(false), 2500)
-  }
-
-  const handleShareInvite = () => {
-    if (!createdCommunity) return
-    const inviteLink = getInviteLink()
-    if (navigator.share) {
-      navigator
-        .share({
-          title: `Join ${createdCommunity.name} on AWS Journey Tracker`,
-          text: `Join ${createdCommunity.name} with code: ${createdCommunity.code}`,
-          url: inviteLink,
-        })
-        .catch(() => {
-          navigator.clipboard.writeText(inviteLink)
-          setShared(true)
-          setTimeout(() => setShared(false), 2500)
-        })
-    } else {
-      navigator.clipboard.writeText(inviteLink)
-      setShared(true)
-      setTimeout(() => setShared(false), 2500)
-    }
+    await navigator.clipboard.writeText(createdCommunity.code)
+    setCopiedCode(true)
+    setTimeout(() => setCopiedCode(false), 2000)
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between text-slate-800 font-sans relative overflow-x-hidden selection:bg-orange-100 selection:text-orange-900">
-      {/* Decorative India Architecture — Bottom Left Corner */}
-      <div
-        className="absolute bottom-0 left-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.06] pointer-events-none select-none overflow-hidden text-slate-800 z-0"
-        aria-hidden="true"
-      >
-        <svg
-          className="w-full h-full"
-          viewBox="0 0 240 200"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="0" y1="195" x2="240" y2="195" strokeWidth="1.5" />
-          <polygon points="40,195 48,140 82,140 90,195" fill="currentColor" fillOpacity="0.04" />
-          <line x1="44" y1="140" x2="86" y2="140" strokeWidth="1.8" />
-          <polygon points="50,140 55,95 75,95 80,140" fill="currentColor" fillOpacity="0.06" />
-          <line x1="53" y1="95" x2="77" y2="95" strokeWidth="1.5" />
-          <polygon points="56,95 60,60 70,60 74,95" fill="currentColor" fillOpacity="0.08" />
-          <line x1="59" y1="60" x2="71" y2="60" strokeWidth="1.2" />
-          <polygon points="61,60 63,30 67,30 69,60" fill="currentColor" fillOpacity="0.1" />
-          <path d="M 62 30 Q 65 20 68 30 Z" fill="currentColor" />
-          <line x1="65" y1="20" x2="65" y2="12" />
-          <circle cx="65" cy="11" r="2" fill="currentColor" />
-          <line x1="58" y1="195" x2="62" y2="140" strokeDasharray="3 3" />
-          <line x1="72" y1="195" x2="68" y2="140" strokeDasharray="3 3" />
-          <rect x="130" y="120" width="28" height="75" fill="currentColor" fillOpacity="0.04" />
-          <rect x="165" y="90" width="34" height="105" fill="currentColor" fillOpacity="0.05" />
-          <line x1="182" y1="90" x2="182" y2="70" />
-          <rect x="205" y="135" width="25" height="60" fill="currentColor" fillOpacity="0.04" />
-        </svg>
-      </div>
-
-      {/* Decorative India Architecture — Bottom Right Corner */}
-      <div
-        className="absolute bottom-0 right-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.06] pointer-events-none select-none overflow-hidden text-slate-800 z-0"
-        aria-hidden="true"
-      >
-        <svg
-          className="w-full h-full"
-          viewBox="0 0 240 200"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="0" y1="195" x2="240" y2="195" strokeWidth="1.5" />
-          <rect x="50" y="180" width="140" height="15" rx="1" fill="currentColor" fillOpacity="0.04" />
-          <rect x="75" y="110" width="90" height="70" rx="2" fill="currentColor" fillOpacity="0.04" />
-          <path d="M 100 180 L 100 135 Q 120 115 140 135 L 140 180" fill="currentColor" fillOpacity="0.06" />
-          <path d="M 98 110 Q 120 60 142 110 Z" fill="currentColor" fillOpacity="0.08" />
-          <line x1="120" y1="60" x2="120" y2="45" strokeWidth="1.5" />
-          <circle cx="120" cy="43" r="2.5" fill="currentColor" />
-          <path d="M 82 110 Q 88 95 94 110 Z" fill="currentColor" fillOpacity="0.06" />
-          <path d="M 146 110 Q 152 95 158 110 Z" fill="currentColor" fillOpacity="0.06" />
-          <polygon points="30,195 34,70 42,70 46,195" fill="currentColor" fillOpacity="0.05" />
-          <path d="M 34 70 Q 38 58 42 70 Z" fill="currentColor" fillOpacity="0.1" />
-          <line x1="38" y1="58" x2="38" y2="50" />
-          <polygon points="194,195 198,70 206,70 210,195" fill="currentColor" fillOpacity="0.05" />
-          <path d="M 198 70 Q 202 58 206 70 Z" fill="currentColor" fillOpacity="0.1" />
-          <line x1="202" y1="58" x2="202" y2="50" />
-        </svg>
-      </div>
-
-      {/* Top Header */}
-      <header className="relative z-10 w-full border-b border-slate-200/80 bg-white/95 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+    <div className="min-h-screen w-full bg-[#0B0F17] flex flex-col justify-between text-slate-100 font-sans relative overflow-x-hidden selection:bg-[#FF9900]/20 selection:text-[#FF9900]">
+      {/* Header */}
+      <header className="relative z-10 w-full border-b border-[#1F293A] bg-[#0E141F]/80 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <AWSLogo size="xs" />
-          <span className="font-mono font-bold text-sm tracking-tight text-slate-900 truncate">
+          <span className="font-mono font-bold text-sm tracking-tight text-white">
             Journey Tracker
           </span>
         </div>
-
-        <div className="hidden md:block text-xs text-slate-500 font-normal">
-          Manage your AWS community. Track progress. Build together.
+        <div className="text-xs font-mono text-slate-400">
+          Step 4 of 4: Community Creation
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col justify-center">
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-8 relative">
-          {/* Progress Indicator */}
-          <AuthProgressIndicator
-            currentStep={createdCommunity ? 4 : 3}
-            steps={ONBOARDING_STEPS}
-          />
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-4xl mx-auto w-full">
+        {/* Onboarding progress steps */}
+        <div className="w-full max-w-md mb-6">
+          <AuthProgressIndicator currentStep={4} steps={ONBOARDING_STEPS} />
+        </div>
 
-          {/* Heading & Subtitle */}
-          <div className="text-center mb-7">
-            <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 leading-tight">
-              Create your community
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1.5 leading-normal">
-              Set up your AWS Student Builder community in a few steps.
-            </p>
-          </div>
-
-          {/* Error Banner */}
-          {errorMessage && (
-            <div className="mb-6 p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-start gap-2.5 animate-fadeIn">
-              <AlertCircle size={16} className="text-rose-600 flex-shrink-0 mt-0.5" />
-              <div className="leading-relaxed">{errorMessage}</div>
+        {/* ============================================================== */}
+        {/* STATE A: COMMUNITY CREATED SUCCESS SCREEN                       */}
+        {/* ============================================================== */}
+        {createdCommunity ? (
+          <div className="w-full max-w-lg bg-[#121824] rounded-2xl border border-[#1F293A] shadow-md p-6 sm:p-8 space-y-6 animate-live-card-in">
+            <div className="text-center space-y-1.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/40 text-emerald-300 border border-emerald-800 text-xs font-mono font-bold uppercase tracking-wider mb-1">
+                <CheckCircle2 size={13} />
+                <span>COMMUNITY CREATED</span>
+              </span>
+              <h1 className="text-2xl font-mono font-bold text-white tracking-tight">
+                {createdCommunity.name}
+              </h1>
+              <p className="text-xs font-sans text-slate-400">
+                Official chapter registered for {createdCommunity.institution}
+              </p>
             </div>
-          )}
 
-          {/* ============================================================== */}
-          {/* SUCCESS VIEW (When community created) */}
-          {/* ============================================================== */}
-          {createdCommunity ? (
-            <div className="space-y-6">
-              <div className="text-center py-4 px-2 max-w-lg mx-auto">
-                <div className="w-14 h-14 mx-auto mb-3.5 rounded-2xl bg-amber-50 border-2 border-[#FF9900] flex items-center justify-center text-[#FF9900] shadow-sm shadow-amber-500/10">
-                  <Sparkles size={28} />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold font-mono text-slate-900">
-                  Your community is ready.
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1.5">
-                  <strong className="text-slate-800">{createdCommunity.name}</strong> has been successfully created. You are now the Community Manager.
-                </p>
-
-                {/* Generated Code Display Box */}
-                <div className="my-5 p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1 font-mono">
-                    Community Code
-                  </span>
-                  <div className="text-2xl sm:text-3xl font-mono font-bold text-[#FF9900] tracking-wider select-all">
-                    {createdCommunity.code}
-                  </div>
-                  <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold">
-                    <ShieldCheck size={12} className="text-emerald-600" />
-                    <span>Role: Community Manager</span>
-                  </div>
-                </div>
-
-                {/* Action Buttons: Share invite & Copy invite link */}
-                <div className="flex flex-col sm:flex-row gap-2.5 justify-center items-center">
-                  <button
-                    type="button"
-                    onClick={handleShareInvite}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-xs transition-all cursor-pointer"
-                  >
-                    {shared ? <Check size={14} className="text-emerald-600" /> : <Share2 size={14} />}
-                    <span>Share community invite</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleCopyInviteLink}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-xs transition-all cursor-pointer"
-                  >
-                    {copiedLink ? <Check size={14} className="text-emerald-600" /> : <LinkIcon size={14} />}
-                    <span>{copiedLink ? 'Link Copied!' : 'Copy invite link'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigate('/dashboard', { replace: true })}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#FF9900] hover:bg-[#EC7211] shadow-sm transition-all cursor-pointer"
-                  >
-                    <span>Go to community</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Live Preview of Created Community (Shows actual DB count) */}
-              <div className="max-w-md mx-auto pt-4 border-t border-slate-100">
-                <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 font-mono text-center">
-                  Community Profile
+            {/* Identity Card */}
+            <div className="p-4 rounded-xl border border-[#1F293A] bg-[#18202E] flex items-center gap-4">
+              <CommunityImage
+                src={createdCommunity.imageUrl}
+                name={createdCommunity.name}
+                shortName={createdCommunity.shortName}
+                size="lg"
+              />
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF9900] font-bold block">
+                  Official AWS Chapter
                 </span>
-                <CommunityPreview
-                  name={createdCommunity.name}
-                  shortName={createdCommunity.shortName}
-                  institution={createdCommunity.institution}
-                  city={createdCommunity.city}
-                  description={createdCommunity.description}
-                  managerName={profile?.full_name || 'Community Manager'}
-                  memberCount={createdCommunity.memberCount}
-                  creationDate={createdCommunity.createdDate}
-                  isVerified={true}
-                />
+                <p className="text-xs font-mono font-semibold text-white truncate">
+                  {createdCommunity.institution}
+                </p>
+                <p className="text-[11px] font-mono text-slate-400 mt-0.5">
+                  {createdCommunity.city}, India • 1 Initial Manager
+                </p>
               </div>
             </div>
-          ) : (
-            /* ============================================================== */
-            /* TWO-COLUMN LAYOUT: FORM (LEFT) + LIVE PREVIEW (RIGHT) */
-            /* ============================================================== */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Form (7 cols) */}
-              <form onSubmit={handleCreate} className="lg:col-span-7 space-y-4">
-                {/* Community name * */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Community name <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <Users size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. AWS Student Builders PSIT"
-                      className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
-                    />
+
+            {/* Community Code Box */}
+            <div className="p-4 rounded-xl bg-[#18202E] border border-[#FF9900]/40 space-y-2">
+              <span className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 font-bold">
+                Official Community Join Code
+              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-mono font-bold text-white tracking-wider">
+                  {createdCommunity.code}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] shadow-2xs transition-all cursor-pointer"
+                >
+                  {copiedCode ? <Check size={13} /> : <Copy size={13} />}
+                  <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+                </button>
+              </div>
+              <p className="text-[11px] font-sans text-slate-400">
+                Give this code to student builders at your institution to let them join your chapter.
+              </p>
+            </div>
+
+            {/* Inline QR Code Section */}
+            {showQrCode && (
+              <div className="p-4 rounded-xl bg-[#0E141F] border border-slate-800 text-center space-y-3 animate-live-fade-in">
+                <span className="text-[10px] font-mono text-[#FF9900] uppercase font-bold tracking-wider block">
+                  CHAPTER ONBOARDING QR CODE
+                </span>
+                <div className="w-36 h-36 mx-auto bg-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+                  {/* High contrast technical QR Code SVG representation */}
+                  <svg className="w-full h-full text-slate-950" viewBox="0 0 100 100" fill="currentColor">
+                    {/* Position Detection Squares */}
+                    <rect x="0" y="0" width="30" height="30" rx="3" />
+                    <rect x="6" y="6" width="18" height="18" fill="white" rx="1" />
+                    <rect x="10" y="10" width="10" height="10" rx="1" />
+
+                    <rect x="70" y="0" width="30" height="30" rx="3" />
+                    <rect x="76" y="6" width="18" height="18" fill="white" rx="1" />
+                    <rect x="80" y="10" width="10" height="10" rx="1" />
+
+                    <rect x="0" y="70" width="30" height="30" rx="3" />
+                    <rect x="6" y="76" width="18" height="18" fill="white" rx="1" />
+                    <rect x="10" y="80" width="10" height="10" rx="1" />
+
+                    {/* QR Code Pixel Matrix simulation for join code */}
+                    <rect x="36" y="6" width="6" height="6" />
+                    <rect x="46" y="6" width="6" height="6" />
+                    <rect x="56" y="6" width="6" height="6" />
+                    <rect x="36" y="18" width="6" height="6" />
+                    <rect x="48" y="18" width="6" height="6" />
+                    <rect x="56" y="24" width="6" height="6" />
+
+                    <rect x="6" y="36" width="6" height="6" />
+                    <rect x="18" y="36" width="6" height="6" />
+                    <rect x="24" y="44" width="6" height="6" />
+                    <rect x="36" y="36" width="6" height="6" />
+                    <rect x="48" y="40" width="6" height="6" />
+                    <rect x="60" y="36" width="6" height="6" />
+                    <rect x="72" y="36" width="6" height="6" />
+                    <rect x="84" y="36" width="6" height="6" />
+
+                    <rect x="36" y="72" width="6" height="6" />
+                    <rect x="48" y="72" width="6" height="6" />
+                    <rect x="60" y="72" width="6" height="6" />
+                    <rect x="72" y="80" width="6" height="6" />
+                    <rect x="84" y="72" width="6" height="6" />
+                    <rect x="60" y="88" width="6" height="6" />
+                  </svg>
+                </div>
+                <p className="text-[11px] font-mono text-slate-400">
+                  Scan with mobile camera to join <code className="text-white">{createdCommunity.code}</code>
+                </p>
+              </div>
+            )}
+
+            {/* Actions: Share, QR, and Continue */}
+            <div className="grid grid-cols-3 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-mono font-bold text-slate-300 bg-[#18202E] hover:bg-[#1E293B] border border-[#1F293A] shadow-xs transition-all cursor-pointer"
+              >
+                <Share2 size={13} className="text-[#FF9900]" />
+                <span>Share</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowQrCode((prev) => !prev)}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-mono font-bold text-slate-300 bg-[#18202E] hover:bg-[#1E293B] border border-[#1F293A] shadow-xs transition-all cursor-pointer"
+              >
+                <QrCode size={13} className="text-[#FF9900]" />
+                <span>{showQrCode ? 'Hide QR' : 'QR Code'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-mono font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] shadow-xs transition-all cursor-pointer"
+              >
+                <span>Dashboard</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ============================================================== */
+          /* STATE B: COMMUNITY CREATION FORM                                */
+          /* ============================================================== */
+          <div className="w-full max-w-xl bg-[#121824] rounded-2xl border border-[#1F293A] shadow-sm p-6 sm:p-8 space-y-6">
+            <div className="text-center space-y-1">
+              <h1 className="text-xl sm:text-2xl font-mono font-bold text-white tracking-tight">
+                Create AWS Student Builder Community
+              </h1>
+              <p className="text-xs text-slate-400 font-sans max-w-md mx-auto">
+                Set up the official institutional tracker for your campus chapter.
+              </p>
+            </div>
+
+            {/* Duplicate Community Alert if detected */}
+            {existingCommunityMatch && (
+              <div className="p-4 rounded-xl border border-amber-800 bg-amber-950/40 space-y-3 animate-live-card-in">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider">
+                      COMMUNITY ALREADY EXISTS
+                    </h3>
+                    <p className="text-xs font-sans text-amber-200/90 leading-relaxed">
+                      An official AWS Student Builder community already exists for this institution. Do not create another tracker.
+                    </p>
                   </div>
                 </div>
 
-                {/* Short Name & Institution */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Community short name * */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Community short name <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={12}
-                      value={shortName}
-                      onChange={(e) => setShortName(e.target.value)}
-                      placeholder="e.g. PSIT-AWS"
-                      className="w-full px-3 py-2 text-sm font-mono uppercase rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
+                <div className="p-3 bg-[#0E141F] rounded-lg border border-amber-800/60 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <CommunityImage
+                      src={existingCommunityMatch.logo_url}
+                      name={existingCommunityMatch.name}
+                      shortName={existingCommunityMatch.short_name}
+                      size="sm"
                     />
-                  </div>
-
-                  {/* Institution * */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Institution <span className="text-rose-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Building2 size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="text"
-                        required
-                        value={institution}
-                        onChange={(e) => setInstitution(e.target.value)}
-                        placeholder="e.g. PSIT Kanpur"
-                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
-                      />
+                    <div className="min-w-0">
+                      <p className="text-xs font-mono font-bold text-white truncate">
+                        {existingCommunityMatch.name}
+                      </p>
+                      <p className="text-[11px] font-mono text-slate-400 truncate">
+                        {existingCommunityMatch.institution} • {existingCommunityMatch.city}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* City * */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    City <span className="text-rose-500">*</span>
+                <div className="flex items-center gap-2 pt-1 font-mono text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      switchCommunityById(existingCommunityMatch.id)
+                      navigate('/community')
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-[#FF9900] text-slate-950 font-bold hover:bg-[#EC7211] transition-colors shadow-2xs"
+                  >
+                    View Community
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/auth/join-community')}
+                    className="px-3 py-1.5 rounded-lg bg-[#18202E] border border-amber-800 text-amber-300 font-semibold hover:bg-[#1E293B] transition-colors shadow-2xs"
+                  >
+                    Join Existing Community
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-800 text-xs font-mono text-rose-300 flex items-start gap-2">
+                <AlertCircle size={15} className="text-rose-400 flex-shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreate} className="space-y-4">
+              {/* Community Name */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-bold mb-1">
+                  Community Name <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. AWS Student Builder Group PSIT Kanpur"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
+                />
+              </div>
+
+              {/* Institution and Short Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-bold mb-1">
+                    Institution Name <span className="text-rose-400">*</span>
                   </label>
-                  <div className="relative">
-                    <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      required
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="e.g. Kanpur"
-                      className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
-                    />
+                  <input
+                    type="text"
+                    required
+                    value={institution}
+                    onChange={(e) => setInstitution(e.target.value)}
+                    placeholder="e.g. Pranveer Singh Institute of Technology"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-bold mb-1">
+                    Short Code <span className="text-rose-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={8}
+                    value={shortName}
+                    onChange={(e) => setShortName(e.target.value.toUpperCase())}
+                    placeholder="e.g. PSIT"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono font-bold tracking-wider rounded-xl bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
+                  />
+                </div>
+              </div>
+
+              {/* City */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-bold mb-1">
+                  City <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. Kanpur"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-slate-300 font-bold mb-1">
+                  Description <span className="text-rose-400">*</span>
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Founding chapter for cloud architects, builders, and developers at PSIT Kanpur..."
+                  className="w-full px-3.5 py-2.5 text-xs font-sans rounded-xl bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] resize-none"
+                />
+              </div>
+
+              {/* Official Community Image Upload Box */}
+              <div className="p-4 rounded-xl border border-[#1F293A] bg-[#18202E] space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-mono uppercase tracking-wider font-bold text-white">
+                    OFFICIAL COMMUNITY / GROUP IMAGE
+                  </label>
+                  <span className="text-[10px] font-mono text-slate-400">Optional</span>
+                </div>
+                <p className="text-[11px] font-sans text-slate-400 leading-relaxed">
+                  This is <strong>NOT</strong> your personal profile photo. It represents the entire student builder chapter across the platform.
+                </p>
+
+                <div className="flex items-center gap-4 pt-1">
+                  <CommunityImage
+                    src={communityImage}
+                    name={name || 'AWS Community'}
+                    shortName={shortName || 'AWS'}
+                    size="lg"
+                  />
+                  <div className="flex-1">
+                    <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold text-slate-300 bg-[#0E141F] border border-[#1F293A] hover:bg-[#1E293B] transition-colors cursor-pointer shadow-2xs">
+                      <Camera size={13} className="text-[#FF9900]" />
+                      <span>{communityImage ? 'Replace Image' : 'Upload Community Image'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    {communityImage && (
+                      <button
+                        type="button"
+                        onClick={() => setCommunityImage(null)}
+                        className="block text-[11px] font-mono text-rose-400 hover:underline mt-1.5"
+                      >
+                        Remove Image
+                      </button>
+                    )}
                   </div>
                 </div>
+              </div>
 
-                {/* Community description * */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Community description <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <FileText size={15} className="absolute left-3 top-3 text-slate-400" />
-                    <textarea
-                      required
-                      rows={3}
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Brief description of the club focus, cloud activities, workshops and certifications..."
-                      className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20 resize-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Primary CTA */}
+              {/* Submit CTA */}
+              <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full mt-4 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-[#FF9900] hover:bg-[#EC7211] active:bg-[#D9650B] shadow-sm transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  disabled={isSubmitting || !!existingCommunityMatch}
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-mono font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] shadow-xs transition-all disabled:opacity-50 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                 >
                   {isSubmitting ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>Creating community...</span>
-                    </>
+                    <Loader2 size={15} className="animate-spin text-slate-950" />
                   ) : (
-                    <>
-                      <span>Create community →</span>
-                    </>
+                    <Building2 size={15} />
                   )}
+                  <span>{isSubmitting ? 'Creating Chapter...' : 'Create Community Tracker'}</span>
                 </button>
-              </form>
-
-              {/* Right Column: Live Preview (5 cols) */}
-              <div className="lg:col-span-5 space-y-2">
-                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
-                  Live Preview
-                </span>
-                <CommunityPreview
-                  name={name}
-                  shortName={shortName}
-                  institution={institution}
-                  city={city}
-                  description={description}
-                  managerName={profile?.full_name || 'Community Manager'}
-                  memberCount={null}
-                  creationDate="Today"
-                  isVerified={true}
-                />
-                <p className="text-[11px] text-slate-400 leading-relaxed text-center pt-2">
-                  Preview updates live as you type. Your community will receive an official AWS Student Chapter code upon creation.
-                </p>
               </div>
-            </div>
-          )}
-        </div>
+            </form>
+          </div>
+        )}
       </main>
 
-      {/* Consistent Bottom Platform Label */}
-      <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-400 font-mono">
-        AWS Journey Tracker • Community platform
-      </footer>
+      {/* Share Modal */}
+      {createdCommunity && (
+        <ShareCommunityModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          community={{
+            id: createdCommunity.id,
+            name: createdCommunity.name,
+            shortName: createdCommunity.shortName,
+            institutionName: createdCommunity.institution,
+            city: createdCommunity.city,
+            code: createdCommunity.code,
+            imageUrl: createdCommunity.imageUrl,
+            memberCount: createdCommunity.memberCount,
+          }}
+        />
+      )}
     </div>
   )
 }

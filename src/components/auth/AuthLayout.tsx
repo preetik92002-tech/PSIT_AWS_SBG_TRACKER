@@ -15,24 +15,24 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   maxWidthClass = 'max-w-xl',
 }) => {
   return (
-    <div className="min-h-screen w-screen flex flex-col justify-between bg-[#F8FAFC] text-slate-800 font-sans relative overflow-x-hidden selection:bg-amber-100 selection:text-amber-900">
+    <div className="min-h-screen w-screen flex flex-col justify-between bg-[#0B0F17] text-slate-100 font-sans relative overflow-x-hidden selection:bg-[#FF9900]/20 selection:text-[#FF9900]">
       {/* Subtle India Architectural Line-Art & Grid Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         {/* Subtle geometric dot grid */}
         <div
           className="absolute inset-0 opacity-[0.35]"
           style={{
-            backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(#1F293A 1px, transparent 1px)',
             backgroundSize: '24px 24px',
           }}
         />
 
         {/* Ambient warm gradient glows */}
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-amber-100/40 via-orange-50/20 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 right-0 w-[500px] h-[300px] bg-gradient-to-t from-sky-100/30 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#FF9900]/10 via-[#FF9900]/5 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 right-0 w-[500px] h-[300px] bg-gradient-to-t from-purple-950/20 to-transparent blur-3xl pointer-events-none" />
 
         {/* India Architectural Line-Art Watermark (India Gate & Heritage silhouettes) */}
-        <div className="absolute bottom-0 inset-x-0 h-44 opacity-[0.14] flex justify-center items-end text-slate-600 select-none">
+        <div className="absolute bottom-0 inset-x-0 h-44 opacity-[0.08] flex justify-center items-end text-slate-500 select-none">
           <svg
             className="w-full max-w-6xl h-40"
             viewBox="0 0 1200 240"
@@ -108,7 +108,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
       </div>
 
       {/* Top Header */}
-      <header className="relative z-10 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
+      <header className="relative z-10 w-full border-b border-[#1F293A] bg-[#0E141F]/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo & Name */}
           <Link to="/" className="flex items-center gap-3 group focus:outline-none">
@@ -117,14 +117,14 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
               <span className="text-[10px] uppercase font-bold tracking-widest text-[#FF9900] leading-tight">
                 Student Builder Hub
               </span>
-              <span className="text-base font-bold text-[#0F172A] tracking-tight group-hover:text-[#FF9900] transition-colors leading-snug">
+              <span className="text-base font-bold text-white tracking-tight group-hover:text-[#FF9900] transition-colors leading-snug">
                 Journey Tracker
               </span>
             </div>
           </Link>
 
           {/* Right Supporting Text */}
-          <div className="hidden md:flex items-center text-xs font-medium text-slate-500 max-w-sm text-right leading-relaxed">
+          <div className="hidden md:flex items-center text-xs font-medium text-slate-400 max-w-sm text-right leading-relaxed">
             {tagline}
           </div>
         </div>
@@ -138,10 +138,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
       </main>
 
       {/* Consistent Footer */}
-      <footer className="relative z-10 w-full border-t border-slate-200/80 bg-white/60 backdrop-blur-sm py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 font-normal">
+      <footer className="relative z-10 w-full border-t border-[#1F293A] bg-[#0E141F]/80 backdrop-blur-sm py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400 font-normal">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-emerald-600" />
+            <ShieldCheck size={14} className="text-emerald-400" />
             <span>Enterprise-grade secure platform · Built for Indian Student Builders</span>
           </div>
           <div>

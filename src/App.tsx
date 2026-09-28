@@ -32,6 +32,7 @@ import { BuilderWorldPage } from '@/pages/BuilderWorldPage'
 import { Community } from '@/pages/Community'
 import { Analytics } from '@/pages/Analytics'
 import { Notifications } from '@/pages/Notifications'
+import { Landing } from '@/pages/Landing'
 
 export function App() {
   return (
@@ -39,6 +40,10 @@ export function App() {
       <AuthProvider>
         <CommunityProvider>
           <Routes>
+            {/* Public Landing Experience */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/landing" element={<Landing />} />
+
             {/* Guest / Public-Only Routes (redirects to dashboard if already authenticated) */}
             <Route element={<PublicOnlyRoute />}>
               <Route path="/login" element={<Login />} />
@@ -54,9 +59,10 @@ export function App() {
 
             {/* Standalone Onboarding Routes (Requires valid session) */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/auth/setup-profile" element={<SetupProfile />} />
+              <Route path="/auth/role-selection" element={<CommunityDecision />} />
               <Route path="/auth/community-decision" element={<CommunityDecision />} />
               <Route path="/auth/community-usage" element={<CommunityDecision />} />
+              <Route path="/auth/setup-profile" element={<SetupProfile />} />
               <Route path="/auth/join-community" element={<JoinCommunity />} />
               <Route path="/auth/create-community" element={<CreateCommunity />} />
             </Route>

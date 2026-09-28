@@ -81,9 +81,9 @@ export const VerifyEmail: React.FC = () => {
       }
 
       setIsSuccess(true)
-      setSuccessMessage('Email verified successfully! Proceeding to profile setup...')
+      setSuccessMessage('Email verified successfully! Proceeding to role selection...')
       setTimeout(() => {
-        navigate('/auth/setup-profile', { replace: true, state: { email } })
+        navigate('/auth/role-selection', { replace: true, state: { email } })
       }, 1000)
     } catch (err) {
       setErrorMessage(
@@ -131,10 +131,10 @@ export const VerifyEmail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col justify-between text-slate-800 font-sans relative overflow-x-hidden selection:bg-orange-100 selection:text-orange-900">
+    <div className="min-h-screen w-full bg-[#0B0F17] flex flex-col justify-between text-slate-100 font-sans relative overflow-x-hidden selection:bg-[#FF9900]/20 selection:text-white">
       {/* Decorative India Architecture — Bottom Left Corner */}
       <div
-        className="absolute bottom-0 left-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.07] pointer-events-none select-none overflow-hidden text-slate-800 z-0"
+        className="absolute bottom-0 left-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.03] pointer-events-none select-none overflow-hidden text-slate-400 z-0"
         aria-hidden="true"
       >
         <svg
@@ -172,7 +172,7 @@ export const VerifyEmail: React.FC = () => {
 
       {/* Decorative India Architecture — Bottom Right Corner */}
       <div
-        className="absolute bottom-0 right-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.07] pointer-events-none select-none overflow-hidden text-slate-800 z-0"
+        className="absolute bottom-0 right-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.03] pointer-events-none select-none overflow-hidden text-slate-400 z-0"
         aria-hidden="true"
       >
         <svg
@@ -204,53 +204,53 @@ export const VerifyEmail: React.FC = () => {
         </svg>
       </div>
 
-      {/* Header at Top (Identical to Login) */}
-      <header className="relative z-10 w-full border-b border-slate-100 bg-white/95 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      {/* Header at Top */}
+      <header className="relative z-10 w-full border-b border-[#1F293A] bg-[#0E141F]/90 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
         {/* Left: AWS logo & Title */}
         <div className="flex items-center gap-2.5">
           <AWSLogo size="xs" />
-          <span className="font-mono font-bold text-sm tracking-tight text-slate-900 truncate">
+          <span className="font-mono font-bold text-sm tracking-tight text-white truncate">
             Journey Tracker
           </span>
         </div>
 
         {/* Right: Tagline (Simplified on Mobile) */}
-        <div className="hidden md:block text-xs text-slate-500 font-normal">
+        <div className="hidden md:block text-xs text-slate-400 font-normal">
           Manage your AWS community. Track progress. Build together.
         </div>
       </header>
 
       {/* Center Authentication Card */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8">
-        <div className="w-[90%] sm:w-[400px] max-w-[420px] bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-8 relative transition-all">
+        <div className="w-[90%] sm:w-[400px] max-w-[420px] bg-[#121824] rounded-2xl border border-[#1F293A] shadow-xl p-6 sm:p-8 relative transition-all">
           {/* Progress Indicator: Step 2 Verification */}
           <AuthProgressIndicator currentStep={2} />
 
           {/* Heading & Subtitle */}
           <div className="text-center mb-6">
-            <h1 className="text-xl sm:text-[22px] font-bold font-mono tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-xl sm:text-[22px] font-bold font-mono tracking-tight text-white leading-tight">
               Verify your email
             </h1>
-            <p className="text-xs text-slate-500 mt-1.5 leading-normal">
+            <p className="text-xs text-slate-400 mt-1.5 leading-normal">
               We sent a verification code to
             </p>
-            <p className="text-xs sm:text-sm font-semibold text-slate-900 mt-0.5 font-mono truncate px-2">
+            <p className="text-xs sm:text-sm font-semibold text-white mt-0.5 font-mono truncate px-2">
               {email}
             </p>
           </div>
 
           {/* Error Banner (Invalid-code state) */}
           {errorMessage && (
-            <div className="mb-4 p-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-start gap-2 shadow-xs">
-              <AlertCircle size={15} className="text-rose-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-4 p-2.5 rounded-lg border border-rose-500/30 bg-rose-950/40 text-rose-300 text-xs flex items-start gap-2 shadow-xs">
+              <AlertCircle size={15} className="text-rose-400 flex-shrink-0 mt-0.5" />
               <div className="leading-snug">{errorMessage}</div>
             </div>
           )}
 
           {/* Success Banner */}
           {successMessage && (
-            <div className="mb-4 p-2.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs flex items-start gap-2 shadow-xs">
-              <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-4 p-2.5 rounded-lg border border-emerald-500/30 bg-emerald-950/40 text-emerald-300 text-xs flex items-start gap-2 shadow-xs">
+              <CheckCircle2 size={15} className="text-emerald-400 flex-shrink-0 mt-0.5" />
               <div className="leading-snug">{successMessage}</div>
             </div>
           )}
@@ -266,8 +266,8 @@ export const VerifyEmail: React.FC = () => {
             />
 
             {/* Resend Code Section with Countdown */}
-            <div className="text-center text-xs text-slate-500 pt-1">
-              <span className="text-slate-500 mr-1.5">Didn't receive the code?</span>
+            <div className="text-center text-xs text-slate-400 pt-1">
+              <span className="text-slate-400 mr-1.5">Didn't receive the code?</span>
               {canResend ? (
                 <button
                   type="button"
@@ -279,9 +279,9 @@ export const VerifyEmail: React.FC = () => {
                   <span>Resend code</span>
                 </button>
               ) : (
-                <span className="text-slate-500">
+                <span className="text-slate-400">
                   Resend available in{' '}
-                  <span className="font-semibold text-slate-800 font-mono">
+                  <span className="font-semibold text-white font-mono">
                     {formattedTimer}
                   </span>
                 </span>
@@ -292,7 +292,7 @@ export const VerifyEmail: React.FC = () => {
             <button
               type="submit"
               disabled={isVerifying || otp.join('').trim().length < 6}
-              className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-[#FF9900] hover:bg-[#EC7211] active:bg-[#D9650B] shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] active:bg-[#D9650B] shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed font-mono"
             >
               {isVerifying ? (
                 <>
@@ -309,16 +309,16 @@ export const VerifyEmail: React.FC = () => {
           <div className="mt-4 text-center">
             <Link
               to="/login"
-              className="text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors"
+              className="text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
             >
               Change email address
             </Link>
           </div>
 
           {/* Bottom Security Message */}
-          <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-center gap-1.5 text-center">
-            <Lock size={12} className="text-slate-400 flex-shrink-0" />
-            <p className="text-[10px] text-slate-400 leading-tight">
+          <div className="mt-5 pt-3 border-t border-[#1F293A] flex items-center justify-center gap-1.5 text-center">
+            <Lock size={12} className="text-slate-500 flex-shrink-0" />
+            <p className="text-[10px] text-slate-500 leading-tight">
               Your account is protected with email verification.
             </p>
           </div>
@@ -327,7 +327,7 @@ export const VerifyEmail: React.FC = () => {
 
       {/* Bottom Centered Platform Label */}
       <footer className="relative z-10 w-full text-center pb-5 pt-3">
-        <p className="text-xs text-slate-400 font-mono">
+        <p className="text-xs text-slate-500 font-mono">
           AWS Journey Tracker • Community platform
         </p>
       </footer>

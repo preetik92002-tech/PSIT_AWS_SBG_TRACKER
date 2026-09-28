@@ -10,24 +10,24 @@ export const AppLayout: React.FC = () => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#F8FAFC] text-slate-800 font-sans relative">
-      {/* Decorative India Heritage Line-Art & Geometric Grid Background */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#0B0F17] text-slate-100 font-sans relative">
+      {/* Decorative India Heritage Line-Art & Technical Grid Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Subtle geometric dot grid */}
+        {/* Subtle technical dot grid */}
         <div
-          className="absolute inset-0 opacity-[0.25]"
+          className="absolute inset-0 opacity-[0.18]"
           style={{
-            backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(#475569 1px, transparent 1px)',
             backgroundSize: '24px 24px',
           }}
         />
 
-        {/* Ambient warm lighting */}
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-amber-100/30 via-orange-50/15 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 right-0 w-[500px] h-[300px] bg-gradient-to-t from-sky-100/25 to-transparent blur-3xl pointer-events-none" />
+        {/* Ambient atmospheric builder lighting */}
+        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#FF9900]/10 via-[#EC7211]/05 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 right-0 w-[500px] h-[300px] bg-gradient-to-t from-[#A855F7]/08 to-transparent blur-3xl pointer-events-none" />
 
         {/* India Heritage Landmark Watermark (India Gate, Taj Mahal, Qutub Minar) */}
-        <IndiaHeritageArtwork className="absolute bottom-0 inset-x-0 h-44 text-slate-400" opacity={0.07} />
+        <IndiaHeritageArtwork className="absolute bottom-0 inset-x-0 h-44 text-slate-700" opacity={0.06} />
       </div>
 
       {/* Desktop Sidebar (hidden on mobile, visible md and up) */}

@@ -26,7 +26,7 @@ export const AuthProgressIndicator: React.FC<AuthProgressIndicatorProps> = ({
     <div className="w-full mb-8 select-none">
       <div className="flex items-center justify-between relative">
         {/* Continuous background track line */}
-        <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-slate-200 z-0" />
+        <div className="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-[#1F293A] z-0" />
 
         {/* Completed active progress fill */}
         <div
@@ -48,10 +48,10 @@ export const AuthProgressIndicator: React.FC<AuthProgressIndicatorProps> = ({
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300 ${
                   isCompleted
-                    ? 'bg-[#FF9900] text-white shadow-sm ring-4 ring-amber-100'
+                    ? 'bg-[#FF9900] text-slate-950 shadow-sm ring-4 ring-[#FF9900]/20'
                     : isCurrent
-                    ? 'bg-white border-2 border-[#FF9900] text-[#0F172A] shadow-md ring-4 ring-amber-100'
-                    : 'bg-white border-2 border-slate-300 text-slate-400'
+                    ? 'bg-[#0E141F] border-2 border-[#FF9900] text-[#FF9900] shadow-md ring-4 ring-[#FF9900]/20'
+                    : 'bg-[#0E141F] border-2 border-[#1F293A] text-slate-500'
                 }`}
               >
                 {isCompleted ? <Check size={14} strokeWidth={3} /> : step.id}
@@ -61,8 +61,8 @@ export const AuthProgressIndicator: React.FC<AuthProgressIndicatorProps> = ({
                   isCurrent
                     ? 'text-[#FF9900] font-bold'
                     : isCompleted
-                    ? 'text-slate-700 font-medium'
-                    : 'text-slate-400 font-normal'
+                    ? 'text-slate-300 font-medium'
+                    : 'text-slate-500 font-normal'
                 }`}
               >
                 {step.label}

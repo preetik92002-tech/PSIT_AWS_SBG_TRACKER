@@ -23,17 +23,17 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className={`rounded-xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-slate-300 hover:shadow-sm ${className}`}
+      className={`rounded-xl border border-[#1F293A] bg-[#121824] p-4 sm:p-5 shadow-xs transition-all hover:border-slate-700/80 hover:bg-[#151D2B] ${className}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 font-mono truncate">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono truncate">
             {title}
           </p>
           <div className="flex items-baseline gap-2 flex-wrap">
             <span
               className={`text-xl sm:text-2xl font-bold tracking-tight font-mono ${
-                isDisconnected ? 'text-slate-400 text-base' : 'text-slate-900'
+                isDisconnected ? 'text-slate-500 text-base' : 'text-white'
               }`}
             >
               {value}
@@ -42,10 +42,10 @@ export const StatCard: React.FC<StatCardProps> = ({
               <span
                 className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
                   status === 'disconnected'
-                    ? 'border-amber-200 text-amber-800 bg-amber-50'
+                    ? 'border-amber-500/30 text-amber-300 bg-amber-500/10'
                     : status === 'coming-soon'
-                    ? 'border-slate-200 text-slate-500 bg-slate-100'
-                    : 'border-emerald-200 text-emerald-800 bg-emerald-50'
+                    ? 'border-slate-700 text-slate-400 bg-slate-800'
+                    : 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
                 }`}
               >
                 {statusLabel}
@@ -53,13 +53,13 @@ export const StatCard: React.FC<StatCardProps> = ({
             )}
           </div>
           {subtitle && (
-            <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+            <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
               {subtitle}
             </p>
           )}
         </div>
         {icon && (
-          <div className="p-2 sm:p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-slate-600 flex-shrink-0">
+          <div className="p-2 sm:p-2.5 rounded-lg bg-[#18202E] border border-[#232F40] text-[#FF9900] flex-shrink-0">
             {icon}
           </div>
         )}

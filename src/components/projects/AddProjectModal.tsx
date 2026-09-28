@@ -10,16 +10,21 @@ import {
   CheckCircle2,
   Users,
   Tag,
+  Calendar,
+  Image,
 } from 'lucide-react'
 import { useCommunity } from '@/context/CommunityContext'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
+import { createProject, updateProject, type ProjectWithTeam } from '@/lib/projects'
+import type { ProjectStatus, ProjectMemberRole } from '@/types/database'
 
 export interface AddProjectModalProps {
   isOpen: boolean
   onClose: () => void
   onProjectAdded?: () => void
+  projectToEdit?: ProjectWithTeam | null
 }
 
 interface ChapterBuilderOption {
@@ -32,16 +37,22 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({
   isOpen,
   onClose,
   onProjectAdded,
+  projectToEdit,
 }) => {
   const { activeCommunity } = useCommunity()
   const { user } = useAuth()
 
+  const isEditing = Boolean(projectToEdit)
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [coverImageUrl, setCoverImageUrl] = useState('')
+  const [status, setStatus] = useState<ProjectStatus>('Planning')
   const [githubUrl, setGithubUrl] = useState('')
   const [liveDemoUrl, setLiveDemoUrl] = useState('')
   const [techTagsInput, setTechTagsInput] = useState('AWS Lambda, DynamoDB, React, Tailwind')
-  const [achievement, setAchievement] = useState('Community Initiative')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [selectedTeamMemberIds, setSelectedTeamMemberIds] = useState<string[]>([])
 
   const [communityMembers, setCommunityMembers] = useState<ChapterBuilderOption[]>([])
@@ -49,7 +60,45 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Fetch only members of current active community for team member selection
+  // Populate form if editing
+  useEffect(() => {
+    if (projectToEdit) {
+      setTitle(projectToEdit.title || '')
+      setDescription(projectToEdit.description || '')
+      setCoverImageUrl(projectToEdit.cover_image_url || '')
+      setStatus((projectToEdit.status as ProjectStatus) || 'Active')
+      setGithubUrl(projectToEdit.github_url || '')
+      setLiveDemoUrl(projectToEdit.live_demo_url || '')
+      setTechTagsInput(
+        Array.isArray(projectToEdit.tech_tags) && projectToEdit.tech_tags.length > 0
+          ? projectToEdit.tech_tags.join(', ')
+          : ''
+      )
+      setStartDate(
+        projectToEdit.start_date ? new Date(projectToEdit.start_date).toISOString().split('T')[0] : ''
+      )
+      setEndDate(
+        projectToEdit.end_date ? new Date(projectToEdit.end_date).toISOString().split('T')[0] : ''
+      )
+      const existingMemberIds = (projectToEdit.team_members || []).map((m) => m.user_id)
+      setSelectedTeamMemberIds(existingMemberIds)
+    } else {
+      setTitle('')
+      setDescription('')
+      setCoverImageUrl('')
+      setStatus('Planning')
+      setGithubUrl('')
+      setLiveDemoUrl('')
+      setTechTagsInput('AWS Lambda, DynamoDB, React, Tailwind')
+      setStartDate('')
+      setEndDate('')
+      if (user?.id) {
+        setSelectedTeamMemberIds([user.id])
+      }
+    }
+  }, [projectToEdit, isOpen, user?.id])
+
+  // Fetch only active members of current community
   useEffect(() => {
     if (!isOpen || !activeCommunity?.id) return
 
@@ -76,16 +125,13 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({
         }))
 
         setCommunityMembers(list)
-        if (user?.id && !selectedTeamMemberIds.includes(user.id)) {
-          setSelectedTeamMemberIds([user.id])
-        }
       } catch (err) {
         console.error('Failed to load roster', err)
       }
     }
 
     fetchRoster()
-  }, [isOpen, activeCommunity?.id, user?.id])
+  }, [isOpen, activeCommunity?.id])
 
   if (!isOpen || !activeCommunity) return null
 
@@ -106,220 +152,294 @@ export const AddProjectModal: React.FC<AddProjectModalProps> = ({
     setSuccessMessage(null)
 
     try {
-      const selectedMembersData = communityMembers
-        .filter((m) => selectedTeamMemberIds.includes(m.userId))
-        .map((m) => ({ id: m.userId, name: m.name, avatar: m.avatarUrl }))
-
       const tags = techTagsInput
         .split(',')
         .map((t) => t.trim())
         .filter(Boolean)
 
-      // Insert into community_projects strictly scoped to activeCommunity.id
-      const { error } = await supabase.from('community_projects').insert({
-        community_id: activeCommunity.id,
-        title: title.trim(),
-        description: description.trim() || null,
-        github_url: githubUrl.trim() || null,
-        status: 'in_progress',
-        created_by: user.id,
-      })
+      if (isEditing && projectToEdit) {
+        await updateProject(projectToEdit.id, {
+          title: title.trim(),
+          description: description.trim() || null,
+          cover_image_url: coverImageUrl.trim() || null,
+          status,
+          tech_tags: tags,
+          github_url: githubUrl.trim() || null,
+          live_demo_url: liveDemoUrl.trim() || null,
+          start_date: startDate ? new Date(startDate).toISOString() : null,
+          end_date: endDate ? new Date(endDate).toISOString() : null,
+        })
+        setSuccessMessage('Project updated successfully!')
+      } else {
+        const initialMembers = selectedTeamMemberIds.map((uid) => ({
+          userId: uid,
+          role: (uid === user.id ? 'lead' : 'collaborator') as ProjectMemberRole,
+        }))
 
-      if (error) throw error
+        await createProject({
+          communityId: activeCommunity.id,
+          title: title.trim(),
+          description: description.trim() || undefined,
+          status,
+          coverImageUrl: coverImageUrl.trim() || undefined,
+          techTags: tags,
+          githubUrl: githubUrl.trim() || undefined,
+          liveDemoUrl: liveDemoUrl.trim() || undefined,
+          startDate: startDate ? new Date(startDate).toISOString() : undefined,
+          endDate: endDate ? new Date(endDate).toISOString() : undefined,
+          initialTeamMembers: initialMembers,
+        })
+        setSuccessMessage('Project created successfully!')
+      }
 
-      // Log activity
-      await supabase.from('community_activities').insert({
-        community_id: activeCommunity.id,
-        user_id: user.id,
-        activity_type: 'created project',
-        description: `Registered new community project "${title.trim()}"`,
-      })
-
-      setSuccessMessage('Project successfully submitted to the chapter showcase!')
       setTimeout(() => {
         onProjectAdded?.()
         onClose()
-      }, 1000)
+      }, 700)
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to register project.')
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to save project.')
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-      <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fadeIn">
+      <div className="w-full max-w-xl rounded-2xl bg-[#121824] border border-[#232F40] shadow-2xl overflow-hidden text-slate-100 flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1F293A] bg-[#0E141F] flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 border border-purple-500/30 flex items-center justify-center">
               <FolderGit2 size={18} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 font-mono">Register Community Project</h2>
-              <p className="text-[11px] text-slate-500">{activeCommunity.name}</p>
+              <h2 className="text-sm font-bold text-white font-mono uppercase tracking-wide">
+                {isEditing ? 'Edit Community Project' : 'Register Community Project'}
+              </h2>
+              <p className="text-[11px] font-sans text-slate-400">{activeCommunity.name}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#1E2736] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto font-sans">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 font-sans text-xs">
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center gap-2 font-mono">
               <AlertCircle size={15} className="shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center gap-2 font-mono">
               <CheckCircle2 size={15} className="shrink-0" />
               <span>{successMessage}</span>
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Project Name *
+          {/* Project Name */}
+          <div className="space-y-1">
+            <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+              Project Name <span className="text-rose-400">*</span>
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. AWS Cloud Cost Optimizer & Idle Detector"
-              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#FF9900]"
+              placeholder="e.g. AWS Cloud Resume Challenge API"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-700 uppercase tracking-wider mb-1">
+          {/* Description */}
+          <div className="space-y-1">
+            <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
               Description
             </label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What does this project do and how does it use AWS services?"
-              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#FF9900]"
+              placeholder="Describe the architectural objectives, AWS services utilized, and problem solved..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] text-xs resize-none"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-mono font-semibold text-slate-700 uppercase tracking-wider mb-1">
+          {/* Status & Technology */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="space-y-1">
+              <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                Project Status
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
+              >
+                <option value="Planning">Planning</option>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                Technology / Services
+              </label>
+              <input
+                type="text"
+                value={techTagsInput}
+                onChange={(e) => setTechTagsInput(e.target.value)}
+                placeholder="Lambda, DynamoDB, CDK, React"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Cover Image URL */}
+          <div className="space-y-1">
+            <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+              Cover Image URL (Optional)
+            </label>
+            <div className="relative">
+              <Image size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="url"
+                value={coverImageUrl}
+                onChange={(e) => setCoverImageUrl(e.target.value)}
+                placeholder="https://images.unsplash.com/..."
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
+              />
+            </div>
+          </div>
+
+          {/* GitHub & Demo URLs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="space-y-1">
+              <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
                 GitHub Repository
               </label>
               <div className="relative">
-                <Github size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Github size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="url"
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
                   placeholder="https://github.com/..."
-                  className="w-full pl-8 pr-3 py-2 text-xs font-mono rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#FF9900]"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-mono font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Live Demo Link
+            <div className="space-y-1">
+              <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                Live Demo / Architecture URL
               </label>
               <div className="relative">
-                <Globe size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Globe size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="url"
                   value={liveDemoUrl}
                   onChange={(e) => setLiveDemoUrl(e.target.value)}
-                  placeholder="https://demo.app"
-                  className="w-full pl-8 pr-3 py-2 text-xs font-mono rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#FF9900]"
+                  placeholder="https://project.example.com"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
                 />
               </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Technology Tags (comma-separated)
-            </label>
-            <input
-              type="text"
-              value={techTagsInput}
-              onChange={(e) => setTechTagsInput(e.target.value)}
-              placeholder="AWS Lambda, DynamoDB, Bedrock, React"
-              className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#FF9900]"
-            />
+          {/* Timeline: Start & End Dates */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="space-y-1">
+              <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                Target / Completion Date
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D121B] border border-[#232F40] text-white focus:outline-none focus:border-[#FF9900] font-mono text-xs"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Achievement Tag
-            </label>
-            <input
-              type="text"
-              value={achievement}
-              onChange={(e) => setAchievement(e.target.value)}
-              placeholder="e.g. AWS Hackathon 1st Place or Production Ready"
-              className="w-full px-3 py-2 text-xs font-sans rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#FF9900]"
-            />
-          </div>
+          {/* Team Members Section (Only Community Members Can Be Added) */}
+          <div className="space-y-2 pt-1 border-t border-[#1F293A]">
+            <div className="flex items-center justify-between">
+              <label className="font-mono text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Users size={14} className="text-[#FF9900]" />
+                <span>Project Team Members ({selectedTeamMemberIds.length})</span>
+              </label>
+              <span className="text-[10px] font-mono text-slate-400">
+                Only {activeCommunity.short_name} members
+              </span>
+            </div>
 
-          {/* Team Members Selector (Strictly current community) */}
-          <div>
-            <label className="block text-xs font-mono font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Credit Team Members (From this Chapter)
-            </label>
-            <div className="max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2 bg-slate-50/50 space-y-1">
-              {communityMembers.map((m) => {
-                const isSelected = selectedTeamMemberIds.includes(m.userId)
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-1 bg-[#0D121B] rounded-xl border border-[#232F40]">
+              {communityMembers.map((member) => {
+                const isSelected = selectedTeamMemberIds.includes(member.userId)
                 return (
-                  <label
-                    key={m.userId}
-                    className={`flex items-center justify-between p-1.5 rounded-lg text-xs cursor-pointer transition-colors ${
-                      isSelected ? 'bg-orange-50 text-[#EA580C] font-semibold' : 'hover:bg-slate-100 text-slate-700'
+                  <button
+                    key={member.userId}
+                    type="button"
+                    onClick={() => handleToggleMember(member.userId)}
+                    className={`flex items-center gap-2 p-2 rounded-lg text-left transition-colors cursor-pointer border ${
+                      isSelected
+                        ? 'bg-purple-500/15 border-purple-500/50 text-purple-200'
+                        : 'bg-[#121824] border-[#1F293A] text-slate-400 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Avatar initials={m.name.slice(0, 2).toUpperCase()} src={m.avatarUrl || undefined} size="sm" />
-                      <span>{m.name}</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleToggleMember(m.userId)}
-                      className="accent-[#FF9900] w-3.5 h-3.5"
-                    />
-                  </label>
+                    <Avatar initials={member.name.slice(0, 2).toUpperCase()} src={member.avatarUrl || undefined} size="xs" />
+                    <span className="truncate text-[11px] font-medium">{member.name}</span>
+                  </button>
                 )
               })}
             </div>
           </div>
 
-          <div className="pt-2">
+          {/* Submit Actions */}
+          <div className="pt-3 border-t border-[#1F293A] flex items-center justify-end gap-3 flex-shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="px-4 py-2 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
               disabled={isLoading || !title.trim()}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-mono font-bold text-white bg-[#FF9900] hover:bg-[#EA580C] disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-mono font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] transition-all cursor-pointer shadow-md disabled:opacity-50"
             >
               {isLoading ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
-                  <span>Registering...</span>
+                  <Loader2 size={14} className="animate-spin text-slate-900" />
+                  <span>Saving...</span>
                 </>
               ) : (
-                <>
-                  <FolderGit2 size={14} />
-                  <span>Register Project</span>
-                </>
+                <span>{isEditing ? 'Save Changes' : 'Register Project'}</span>
               )}
             </button>
           </div>

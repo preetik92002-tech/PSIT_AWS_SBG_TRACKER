@@ -193,10 +193,12 @@ export type UserCommunityItem = {
   name: string
   short_name: string
   institution_name: string | null
+  institution?: string | null
   city: string
   state: string | null
   description: string | null
   logo_url: string | null
+  image_url?: string | null
   banner_url: string | null
   role: CommunityMemberRole
   member_count: number
@@ -251,14 +253,32 @@ export type CommunityDashboardMetrics = {
   }>
 }
 
+export type EventStatus = 'draft' | 'published' | 'live' | 'completed' | 'archived' | 'cancelled'
+
 export type CommunityEvent = {
   id: string
   community_id: string
   title: string
   description: string | null
   event_date: string
+  start_time?: string | null
+  end_time?: string | null
   location: string | null
   event_type: string
+  status?: EventStatus
+  image_url?: string | null
+  meeting_url?: string | null
+  registration_required?: boolean
+  max_capacity?: number | null
+  participant_count?: number
+  highlights?: string | null
+  achievements?: string | null
+  project_link?: string | null
+  github_link?: string | null
+  slides_link?: string | null
+  recording_link?: string | null
+  photos?: string[] | Json
+  resources?: Array<{ title: string; url: string; type?: string }> | Json
   created_by: string | null
   created_at: string
   updated_at: string
@@ -270,20 +290,76 @@ export type CommunityEventInsert = {
   title: string
   description?: string | null
   event_date: string
+  start_time?: string | null
+  end_time?: string | null
   location?: string | null
   event_type?: string
+  status?: EventStatus
+  image_url?: string | null
+  meeting_url?: string | null
+  registration_required?: boolean
+  max_capacity?: number | null
+  participant_count?: number
+  highlights?: string | null
+  achievements?: string | null
+  project_link?: string | null
+  github_link?: string | null
+  slides_link?: string | null
+  recording_link?: string | null
+  photos?: string[] | Json
+  resources?: Array<{ title: string; url: string; type?: string }> | Json
   created_by?: string | null
   created_at?: string
   updated_at?: string
 }
+
+export type CommunityEventRsvp = {
+  id: string
+  community_id: string
+  event_id: string
+  user_id: string
+  attended: boolean
+  attended_at?: string | null
+  feedback?: string | null
+  created_at: string
+}
+
+export type CommunityEventRsvpInsert = {
+  id?: string
+  community_id: string
+  event_id: string
+  user_id: string
+  attended?: boolean
+  attended_at?: string | null
+  feedback?: string | null
+  created_at?: string
+}
+
+export type CommunityEventRsvpUpdate = {
+  id?: string
+  community_id?: string
+  event_id?: string
+  user_id?: string
+  attended?: boolean
+  attended_at?: string | null
+  feedback?: string | null
+  created_at?: string
+}
+
+export type ProjectStatus = 'Planning' | 'Active' | 'Completed' | 'Archived'
 
 export type CommunityProject = {
   id: string
   community_id: string
   title: string
   description: string | null
-  status: string
+  status: ProjectStatus | string
+  cover_image_url: string | null
+  tech_tags: string[]
   github_url: string | null
+  live_demo_url: string | null
+  start_date: string | null
+  end_date: string | null
   created_by: string | null
   created_at: string
   updated_at: string
@@ -294,12 +370,91 @@ export type CommunityProjectInsert = {
   community_id: string
   title: string
   description?: string | null
-  status?: string
+  status?: ProjectStatus | string
+  cover_image_url?: string | null
+  tech_tags?: string[]
   github_url?: string | null
+  live_demo_url?: string | null
+  start_date?: string | null
+  end_date?: string | null
   created_by?: string | null
   created_at?: string
   updated_at?: string
 }
+
+export type CommunityProjectUpdate = Partial<CommunityProjectInsert>
+
+export type ProjectMemberRole = 'lead' | 'collaborator' | 'contributor'
+
+export type CommunityProjectMember = {
+  id: string
+  project_id: string
+  community_id: string
+  user_id: string
+  role: ProjectMemberRole
+  created_at: string
+}
+
+export type CommunityProjectMemberInsert = {
+  id?: string
+  project_id: string
+  community_id: string
+  user_id: string
+  role?: ProjectMemberRole
+  created_at?: string
+}
+
+export type ContributionCategory =
+  | 'Mentorship'
+  | 'Debugging & Troubleshooting'
+  | 'Code Review'
+  | 'AWS Deployment'
+  | 'Workshop Support'
+  | 'Architecture Guidance'
+  | 'Documentation'
+  | 'General Assistance'
+
+export type ContributionStatus = 'pending' | 'approved' | 'rejected'
+
+export type CommunityContribution = {
+  id: string
+  community_id: string
+  contributor_id: string
+  recipient_id: string | null
+  category: ContributionCategory
+  title: string
+  description: string
+  evidence_url: string | null
+  status: ContributionStatus
+  points_awarded: number
+  reviewer_id: string | null
+  reviewer_feedback: string | null
+  reviewed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CommunityContributionInsert = {
+  id?: string
+  community_id: string
+  contributor_id: string
+  recipient_id?: string | null
+  category: ContributionCategory
+  title: string
+  description: string
+  evidence_url?: string | null
+  status?: ContributionStatus
+  points_awarded?: number
+  reviewer_id?: string | null
+  reviewer_feedback?: string | null
+  reviewed_at?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export type CommunityContributionUpdate = Partial<CommunityContributionInsert>
+
+export type TaskPriority = 'normal' | 'important' | 'urgent'
 
 export type CommunityTask = {
   id: string
@@ -308,6 +463,10 @@ export type CommunityTask = {
   description: string | null
   points: number
   due_date: string | null
+  priority?: TaskPriority
+  checklist?: string[] | Json
+  topic?: string
+  is_archived?: boolean
   created_by: string | null
   created_at: string
   updated_at: string
@@ -320,6 +479,10 @@ export type CommunityTaskInsert = {
   description?: string | null
   points?: number
   due_date?: string | null
+  priority?: TaskPriority
+  checklist?: string[] | Json
+  topic?: string
+  is_archived?: boolean
   created_by?: string | null
   created_at?: string
   updated_at?: string
@@ -331,6 +494,14 @@ export type CommunityTaskAssignment = {
   task_id: string
   user_id: string
   status: string
+  submission_comment?: string | null
+  submission_url?: string | null
+  evidence_url?: string | null
+  submitted_at?: string | null
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  review_feedback?: string | null
+  checklist_state?: Record<string, boolean> | Json
   completed_at: string | null
   created_at: string
   updated_at: string
@@ -342,9 +513,105 @@ export type CommunityTaskAssignmentInsert = {
   task_id: string
   user_id: string
   status?: string
+  submission_comment?: string | null
+  submission_url?: string | null
+  evidence_url?: string | null
+  submitted_at?: string | null
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  review_feedback?: string | null
+  checklist_state?: Record<string, boolean> | Json
   completed_at?: string | null
   created_at?: string
   updated_at?: string
+}
+
+export type PointsTransaction = {
+  id: string
+  community_id: string
+  user_id: string
+  points: number
+  reason: string
+  entity_type: string
+  entity_id: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export type PointsTransactionInsert = {
+  id?: string
+  community_id: string
+  user_id: string
+  points: number
+  reason: string
+  entity_type?: string
+  entity_id?: string | null
+  created_by?: string | null
+  created_at?: string
+}
+
+export type PointsTransactionUpdate = {
+  id?: string
+  community_id?: string
+  user_id?: string
+  points?: number
+  reason?: string
+  entity_type?: string
+  entity_id?: string | null
+  created_by?: string | null
+  created_at?: string
+}
+
+export type NotificationType =
+  | 'task'
+  | 'event'
+  | 'project'
+  | 'community'
+  | 'achievement'
+  | 'system'
+  | 'contribution'
+  | 'live'
+
+export type AppNotification = {
+  id: string
+  recipient_id: string
+  community_id: string | null
+  type: NotificationType
+  title: string
+  message: string
+  entity_type?: string | null
+  entity_id?: string | null
+  is_read: boolean
+  created_at: string
+  read_at?: string | null
+}
+
+export type AppNotificationInsert = {
+  id?: string
+  recipient_id: string
+  community_id?: string | null
+  type: NotificationType
+  title: string
+  message: string
+  entity_type?: string | null
+  entity_id?: string | null
+  is_read?: boolean
+  created_at?: string
+  read_at?: string | null
+}
+
+export type AppNotificationUpdate = {
+  id?: string
+  recipient_id?: string
+  community_id?: string | null
+  type?: NotificationType
+  title?: string
+  message?: string
+  entity_type?: string | null
+  entity_id?: string | null
+  is_read?: boolean
+  created_at?: string
+  read_at?: string | null
 }
 
 export type CommunityActivity = {
@@ -365,6 +632,113 @@ export type CommunityActivityInsert = {
   description: string
   metadata?: Json
   created_at?: string
+}
+
+export type GoogleMeetStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'SCHEDULED' | 'LIVE' | 'ENDED' | 'FAILED'
+
+export type GoogleConnectionInfo = {
+  is_connected: boolean
+  google_email: string | null
+  status: string
+  expires_at?: string | null
+  updated_at?: string | null
+}
+
+export type GoogleMeetSpace = {
+  id: string
+  community_id: string
+  event_id: string | null
+  created_by: string | null
+  title: string
+  google_space_name: string
+  meeting_uri: string
+  meeting_code: string
+  status: GoogleMeetStatus
+  scheduled_start: string | null
+  scheduled_end: string | null
+  config: Json
+  ended_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type GoogleMeetSpaceInsert = {
+  id?: string
+  community_id: string
+  event_id?: string | null
+  created_by?: string | null
+  title?: string
+  google_space_name: string
+  meeting_uri: string
+  meeting_code: string
+  status?: GoogleMeetStatus
+  scheduled_start?: string | null
+  scheduled_end?: string | null
+  config?: Json
+  ended_at?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export type GoogleMeetSpaceUpdate = Partial<GoogleMeetSpaceInsert>
+
+export type GoogleMeetConference = {
+  id: string
+  space_id: string
+  google_conference_record_name: string
+  start_time: string | null
+  end_time: string | null
+  status: 'ACTIVE' | 'ENDED'
+  created_at: string
+}
+
+export type GoogleMeetConferenceInsert = {
+  id?: string
+  space_id: string
+  google_conference_record_name: string
+  start_time?: string | null
+  end_time?: string | null
+  status?: 'ACTIVE' | 'ENDED'
+  created_at?: string
+}
+
+export type GoogleMeetConferenceUpdate = Partial<GoogleMeetConferenceInsert>
+
+export type GoogleMeetParticipant = {
+  id: string
+  conference_id: string
+  space_id: string
+  user_id: string | null
+  google_participant_name: string
+  display_name: string | null
+  email: string | null
+  earliest_start_time: string | null
+  latest_end_time: string | null
+  attendance_duration_seconds: number
+  created_at: string
+}
+
+export type GoogleMeetParticipantInsert = {
+  id?: string
+  conference_id: string
+  space_id: string
+  user_id?: string | null
+  google_participant_name: string
+  display_name?: string | null
+  email?: string | null
+  earliest_start_time?: string | null
+  latest_end_time?: string | null
+  attendance_duration_seconds?: number
+  created_at?: string
+}
+
+export type GoogleMeetArtifact = {
+  id: string
+  conference_id: string
+  artifact_type: 'recording' | 'transcript'
+  google_artifact_name: string
+  export_uri: string | null
+  created_at: string
 }
 
 export type Database = {
@@ -463,6 +837,60 @@ export type Database = {
         Update: Partial<CommunityActivityInsert>
         Relationships: []
       }
+      points_transactions: {
+        Row: PointsTransaction
+        Insert: PointsTransactionInsert
+        Update: PointsTransactionUpdate
+        Relationships: []
+      }
+      notifications: {
+        Row: AppNotification
+        Insert: AppNotificationInsert
+        Update: AppNotificationUpdate
+        Relationships: []
+      }
+      community_event_rsvps: {
+        Row: CommunityEventRsvp
+        Insert: CommunityEventRsvpInsert
+        Update: CommunityEventRsvpUpdate
+        Relationships: []
+      }
+      google_meet_spaces: {
+        Row: GoogleMeetSpace
+        Insert: GoogleMeetSpaceInsert
+        Update: GoogleMeetSpaceUpdate
+        Relationships: []
+      }
+      google_meet_conferences: {
+        Row: GoogleMeetConference
+        Insert: GoogleMeetConferenceInsert
+        Update: GoogleMeetConferenceUpdate
+        Relationships: []
+      }
+      google_meet_participants: {
+        Row: GoogleMeetParticipant
+        Insert: GoogleMeetParticipantInsert
+        Update: Partial<GoogleMeetParticipantInsert>
+        Relationships: []
+      }
+      google_meet_artifacts: {
+        Row: GoogleMeetArtifact
+        Insert: { id?: string; conference_id: string; artifact_type: 'recording' | 'transcript'; google_artifact_name: string; export_uri?: string | null; created_at?: string }
+        Update: Partial<{ id?: string; conference_id?: string; artifact_type?: 'recording' | 'transcript'; google_artifact_name?: string; export_uri?: string | null }>
+        Relationships: []
+      }
+      community_project_members: {
+        Row: CommunityProjectMember
+        Insert: CommunityProjectMemberInsert
+        Update: Partial<CommunityProjectMemberInsert>
+        Relationships: []
+      }
+      community_contributions: {
+        Row: CommunityContribution
+        Insert: CommunityContributionInsert
+        Update: CommunityContributionUpdate
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -502,6 +930,58 @@ export type Database = {
       }
       get_community_analytics: {
         Args: { p_community_id: string }
+        Returns: Json
+      }
+      promote_community_member: {
+        Args: { p_community_id: string; p_target_user_id: string }
+        Returns: Json
+      }
+      demote_community_member: {
+        Args: { p_community_id: string; p_target_user_id: string }
+        Returns: Json
+      }
+      remove_community_member: {
+        Args: { p_community_id: string; p_target_user_id: string }
+        Returns: Json
+      }
+      approve_task_submission: {
+        Args: { p_assignment_id: string; p_review_feedback?: string | null }
+        Returns: Json
+      }
+      reject_task_submission: {
+        Args: { p_assignment_id: string; p_review_feedback: string }
+        Returns: Json
+      }
+      award_manual_points: {
+        Args: { p_community_id: string; p_target_user_id: string; p_points: number; p_reason: string }
+        Returns: Json
+      }
+      mark_event_attendance: {
+        Args: { p_event_id: string; p_target_user_id: string; p_attended: boolean }
+        Returns: Json
+      }
+      get_community_google_connection: {
+        Args: { p_community_id: string }
+        Returns: Json
+      }
+      disconnect_community_google: {
+        Args: { p_community_id: string }
+        Returns: Json
+      }
+      approve_community_contribution: {
+        Args: { p_contribution_id: string; p_points?: number; p_feedback?: string | null }
+        Returns: Json
+      }
+      reject_community_contribution: {
+        Args: { p_contribution_id: string; p_feedback?: string | null }
+        Returns: Json
+      }
+      add_project_member: {
+        Args: { p_project_id: string; p_user_id: string; p_role?: string }
+        Returns: Json
+      }
+      remove_project_member: {
+        Args: { p_project_id: string; p_user_id: string }
         Returns: Json
       }
     }

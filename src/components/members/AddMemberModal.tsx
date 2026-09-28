@@ -130,23 +130,23 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-      <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-fade-in">
+      <div className="w-full max-w-lg rounded-2xl bg-[#131924] border border-[#232F40] shadow-2xl overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1F293A] bg-[#0E141F]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#EA580C] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#FF9900]/15 text-[#FF9900] flex items-center justify-center border border-[#FF9900]/30">
               <UserPlus size={18} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 font-mono">Add Member to Chapter</h2>
-              <p className="text-[11px] text-slate-500">{activeCommunity.name}</p>
+              <h2 className="text-sm font-bold text-white font-mono">Add Member to Chapter</h2>
+              <p className="text-[11px] text-slate-400">{activeCommunity.name}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -154,14 +154,14 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
         {/* Manager Tabs */}
         {isManager && (
-          <div className="flex border-b border-slate-200 bg-slate-50 px-6 pt-2">
+          <div className="flex border-b border-[#1F293A] bg-[#0E141F] px-6 pt-2">
             <button
               type="button"
               onClick={() => { setTab('invite'); setErrorMsg(null); setSuccessMsg(null); }}
-              className={`pb-2.5 text-xs font-mono font-medium border-b-2 px-3 transition-colors ${
+              className={`pb-2.5 text-xs font-mono font-medium border-b-2 px-3 transition-colors cursor-pointer ${
                 tab === 'invite'
-                  ? 'border-[#FF9900] text-[#EA580C] font-semibold'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'border-[#FF9900] text-[#FF9900] font-semibold'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
               Invite Code & Link
@@ -169,10 +169,10 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
             <button
               type="button"
               onClick={() => { setTab('direct'); setErrorMsg(null); setSuccessMsg(null); }}
-              className={`pb-2.5 text-xs font-mono font-medium border-b-2 px-3 transition-colors ${
+              className={`pb-2.5 text-xs font-mono font-medium border-b-2 px-3 transition-colors cursor-pointer ${
                 tab === 'direct'
-                  ? 'border-[#FF9900] text-[#EA580C] font-semibold'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'border-[#FF9900] text-[#FF9900] font-semibold'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
               Direct Enrollment
@@ -185,19 +185,19 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
             <div className="space-y-5">
               {/* Community Code Box */}
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-mono font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Official Community Code
                 </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <div className="font-mono text-base font-bold text-slate-900 flex-1 tracking-wider">
+                <div className="flex items-center gap-2 p-3 bg-[#18202E] rounded-xl border border-[#1F293A]">
+                  <div className="font-mono text-base font-bold text-white flex-1 tracking-wider">
                     {inviteCode}
                   </div>
                   <button
                     type="button"
                     onClick={handleCopyCode}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all shadow-2xs"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-[#121824] border border-[#1F293A] text-slate-200 hover:bg-[#1E293B] transition-all shadow-2xs cursor-pointer"
                   >
-                    {copiedCode ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                    {copiedCode ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                     <span>{copiedCode ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
@@ -208,20 +208,20 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
               {/* Shareable Link Box */}
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-mono font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Direct Join Link
                 </label>
-                <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-2 p-2 bg-[#18202E] rounded-xl border border-[#1F293A]">
                   <input
                     type="text"
                     readOnly
                     value={inviteUrl}
-                    className="flex-1 bg-transparent text-xs text-slate-600 font-mono px-2 outline-none select-all truncate"
+                    className="flex-1 bg-transparent text-xs text-slate-300 font-mono px-2 outline-none select-all truncate"
                   />
                   <button
                     type="button"
                     onClick={handleCopyLink}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-[#FF9900] hover:bg-[#EA580C] text-white transition-all shadow-xs shrink-0"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-[#FF9900] hover:bg-[#EC7211] text-slate-950 transition-all shadow-xs shrink-0 cursor-pointer"
                   >
                     {copiedLink ? <Check size={14} /> : <Share2 size={14} />}
                     <span>{copiedLink ? 'Copied!' : 'Copy Link'}</span>
@@ -230,10 +230,10 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
               </div>
 
               {/* Quick instructions */}
-              <div className="p-3.5 rounded-xl bg-orange-50/60 border border-orange-100 flex items-start gap-2.5">
-                <Shield size={16} className="text-[#EA580C] shrink-0 mt-0.5" />
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Anyone who joins via this code or link is automatically added as a verified member of <strong className="text-slate-900">{activeCommunity.name}</strong>.
+              <div className="p-3.5 rounded-xl bg-[#FF9900]/10 border border-[#FF9900]/25 flex items-start gap-2.5">
+                <Shield size={16} className="text-[#FF9900] shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Anyone who joins via this code or link is automatically added as a verified member of <strong className="text-white">{activeCommunity.name}</strong>.
                 </p>
               </div>
             </div>
@@ -241,21 +241,21 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
             /* Direct Enrollment Tab */
             <form onSubmit={handleDirectEnroll} className="space-y-4">
               {errorMsg && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 text-xs text-red-700">
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-2 text-xs text-red-400">
                   <AlertCircle size={15} className="shrink-0 mt-0.5" />
                   <span>{errorMsg}</span>
                 </div>
               )}
 
               {successMsg && (
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-2 text-xs text-emerald-800">
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2 text-xs text-emerald-400">
                   <Check size={15} className="shrink-0 mt-0.5" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-mono font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Builder Email Address *
                 </label>
                 <div className="relative">
@@ -266,7 +266,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
                     value={directEmail}
                     onChange={(e) => setDirectEmail(e.target.value)}
                     placeholder="student@institution.edu"
-                    className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-lg bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                    className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-lg bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
                   />
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1">
@@ -275,14 +275,14 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-mono font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Community Role
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                     directRole === 'member'
-                      ? 'border-[#FF9900] bg-orange-50/40 text-slate-900 font-semibold'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      ? 'border-[#FF9900] bg-[#FF9900]/15 text-white font-semibold'
+                      : 'border-[#1F293A] bg-[#18202E] text-slate-300 hover:bg-[#1E293B]'
                   }`}>
                     <input
                       type="radio"
@@ -299,8 +299,8 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
                   <label className={`p-3 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                     directRole === 'manager'
-                      ? 'border-[#FF9900] bg-orange-50/40 text-slate-900 font-semibold'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      ? 'border-[#FF9900] bg-[#FF9900]/15 text-white font-semibold'
+                      : 'border-[#1F293A] bg-[#18202E] text-slate-300 hover:bg-[#1E293B]'
                   }`}>
                     <input
                       type="radio"
@@ -321,7 +321,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
                 <button
                   type="submit"
                   disabled={isLoading || !directEmail.trim()}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-mono font-bold text-white bg-[#FF9900] hover:bg-[#EA580C] disabled:opacity-50 transition-all cursor-pointer shadow-xs"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-mono font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] disabled:opacity-50 transition-all cursor-pointer shadow-xs"
                 >
                   {isLoading ? (
                     <>
@@ -341,11 +341,11 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+        <div className="px-6 py-3 border-t border-[#1F293A] bg-[#0E141F] flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-mono font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="px-4 py-1.5 text-xs font-mono font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             Close
           </button>

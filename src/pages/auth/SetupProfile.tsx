@@ -30,9 +30,9 @@ import { AWSLogo } from '@/components/ui/AWSLogo'
 
 const ONBOARDING_STEPS: ProgressStep[] = [
   { id: 1, label: 'Account' },
-  { id: 2, label: 'Profile' },
-  { id: 3, label: 'Community' },
-  { id: 4, label: 'Finish' },
+  { id: 2, label: 'Role' },
+  { id: 3, label: 'Profile' },
+  { id: 4, label: 'Community' },
 ]
 
 export const SetupProfile: React.FC = () => {
@@ -218,10 +218,10 @@ export const SetupProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between text-slate-800 font-sans relative overflow-x-hidden selection:bg-orange-100 selection:text-orange-900">
+    <div className="min-h-screen w-full bg-[#0B0F17] flex flex-col justify-between text-slate-100 font-sans relative overflow-x-hidden selection:bg-[#FF9900]/20 selection:text-white">
       {/* Decorative India Architecture — Bottom Left Corner */}
       <div
-        className="absolute bottom-0 left-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.06] pointer-events-none select-none overflow-hidden text-slate-800 z-0"
+        className="absolute bottom-0 left-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.03] pointer-events-none select-none overflow-hidden text-slate-400 z-0"
         aria-hidden="true"
       >
         <svg
@@ -255,7 +255,7 @@ export const SetupProfile: React.FC = () => {
 
       {/* Decorative India Architecture — Bottom Right Corner */}
       <div
-        className="absolute bottom-0 right-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.06] pointer-events-none select-none overflow-hidden text-slate-800 z-0"
+        className="absolute bottom-0 right-0 w-36 sm:w-60 h-32 sm:h-48 opacity-[0.03] pointer-events-none select-none overflow-hidden text-slate-400 z-0"
         aria-hidden="true"
       >
         <svg
@@ -286,15 +286,15 @@ export const SetupProfile: React.FC = () => {
       </div>
 
       {/* Top Header */}
-      <header className="relative z-10 w-full border-b border-slate-200/80 bg-white/95 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="relative z-10 w-full border-b border-[#1F293A] bg-[#0E141F]/90 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <AWSLogo size="xs" />
-          <span className="font-mono font-bold text-sm tracking-tight text-slate-900 truncate">
+          <span className="font-mono font-bold text-sm tracking-tight text-white truncate">
             Journey Tracker
           </span>
         </div>
 
-        <div className="hidden md:block text-xs text-slate-500 font-normal">
+        <div className="hidden md:block text-xs text-slate-400 font-normal">
           Manage your AWS community. Track progress. Build together.
         </div>
       </header>
@@ -307,40 +307,40 @@ export const SetupProfile: React.FC = () => {
           {/* ============================================================== */}
           <aside className="hidden lg:flex lg:col-span-3 flex-col gap-4">
             {/* Identity & Journey Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
+            <div className="bg-[#121824] rounded-2xl border border-[#1F293A] shadow-xl p-5">
               <div className="flex items-center gap-2 text-xs font-semibold text-[#FF9900] uppercase tracking-wider mb-2 font-mono">
                 <Sparkles size={14} />
                 <span>Builder Onboarding</span>
               </div>
-              <h2 className="text-base font-bold text-slate-900 font-mono">
+              <h2 className="text-base font-bold text-white font-mono">
                 Welcome to the Hub
               </h2>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 Connect your academic institution with AWS cloud resources, verified chapter badges, and peer collaborators.
               </p>
 
               {/* Onboarding Milestones Checklist */}
-              <div className="mt-5 space-y-3 pt-4 border-t border-slate-100 text-xs">
-                <div className="flex items-center gap-2.5 text-slate-700">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <div className="mt-5 space-y-3 pt-4 border-t border-[#1F293A] text-xs">
+                <div className="flex items-center gap-2.5 text-slate-200">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
                     <Check size={12} strokeWidth={3} />
                   </div>
                   <span>Account Authentication</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-[#FF9900] font-semibold">
-                  <div className="w-5 h-5 rounded-full bg-orange-100 text-[#FF9900] flex items-center justify-center flex-shrink-0 text-[10px]">
+                  <div className="w-5 h-5 rounded-full bg-[#FF9900]/20 text-[#FF9900] border border-[#FF9900]/30 flex items-center justify-center flex-shrink-0 text-[10px] font-bold">
                     2
                   </div>
                   <span>Profile Information</span>
                 </div>
-                <div className="flex items-center gap-2.5 text-slate-400">
-                  <div className="w-5 h-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0 text-[10px]">
+                <div className="flex items-center gap-2.5 text-slate-500">
+                  <div className="w-5 h-5 rounded-full bg-[#18202E] text-slate-500 border border-[#1F293A] flex items-center justify-center flex-shrink-0 text-[10px]">
                     3
                   </div>
                   <span>Community Alignment</span>
                 </div>
-                <div className="flex items-center gap-2.5 text-slate-400">
-                  <div className="w-5 h-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0 text-[10px]">
+                <div className="flex items-center gap-2.5 text-slate-500">
+                  <div className="w-5 h-5 rounded-full bg-[#18202E] text-slate-500 border border-[#1F293A] flex items-center justify-center flex-shrink-0 text-[10px]">
                     4
                   </div>
                   <span>Finish & Dashboard</span>
@@ -349,12 +349,12 @@ export const SetupProfile: React.FC = () => {
             </div>
 
             {/* Platform Perks Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 font-mono flex items-center gap-1.5">
+            <div className="bg-[#121824] rounded-2xl border border-[#1F293A] shadow-xl p-5">
+              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3 font-mono flex items-center gap-1.5">
                 <Award size={14} className="text-[#FF9900]" />
                 <span>Profile Perks</span>
               </h3>
-              <ul className="space-y-2.5 text-xs text-slate-600">
+              <ul className="space-y-2.5 text-xs text-slate-400">
                 <li className="flex items-start gap-2">
                   <span className="text-[#FF9900] font-bold">•</span>
                   <span>Unique builder tag recognized across all campus hackathons.</span>
@@ -375,31 +375,31 @@ export const SetupProfile: React.FC = () => {
           {/* CENTER: MAIN PROFILE SETUP FORM CARD */}
           {/* ============================================================== */}
           <div className="lg:col-span-6 w-full max-w-xl mx-auto">
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-8 relative">
-              {/* Progress Indicator (Step 2: Profile) */}
-              <AuthProgressIndicator currentStep={2} steps={ONBOARDING_STEPS} />
+            <div className="bg-[#121824] rounded-2xl border border-[#1F293A] shadow-xl p-6 sm:p-8 relative">
+              {/* Progress Indicator (Step 3: Profile) */}
+              <AuthProgressIndicator currentStep={3} steps={ONBOARDING_STEPS} />
 
               {/* Heading & Subtitle */}
               <div className="text-center mb-6">
-                <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 leading-tight">
+                <h1 className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white leading-tight">
                   Set up your profile
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-500 mt-1.5 leading-normal">
+                <p className="text-xs sm:text-sm text-slate-400 mt-1.5 leading-normal">
                   Tell your community a little about yourself.
                 </p>
               </div>
 
               {/* Alert Banners */}
               {errorMessage && (
-                <div className="mb-5 p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-start gap-2.5 animate-fadeIn">
-                  <AlertCircle size={16} className="text-rose-600 flex-shrink-0 mt-0.5" />
+                <div className="mb-5 p-3 rounded-xl border border-rose-500/30 bg-rose-950/40 text-rose-300 text-xs flex items-start gap-2.5 animate-fadeIn">
+                  <AlertCircle size={16} className="text-rose-400 flex-shrink-0 mt-0.5" />
                   <div className="leading-relaxed">{errorMessage}</div>
                 </div>
               )}
 
               {successMessage && (
-                <div className="mb-5 p-3 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs flex items-start gap-2.5 animate-fadeIn">
-                  <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                <div className="mb-5 p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/40 text-emerald-300 text-xs flex items-start gap-2.5 animate-fadeIn">
+                  <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div className="leading-relaxed">{successMessage}</div>
                 </div>
               )}
@@ -408,7 +408,7 @@ export const SetupProfile: React.FC = () => {
                 {/* -------------------------------------------------------- */}
                 {/* PROFILE PHOTO SECTION (Compact on mobile) */}
                 {/* -------------------------------------------------------- */}
-                <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 flex flex-col sm:flex-row items-center sm:items-start gap-3.5 text-center sm:text-left">
+                <div className="p-3.5 sm:p-4 rounded-xl bg-[#18202E] border border-[#1F293A] flex flex-col sm:flex-row items-center sm:items-start gap-3.5 text-center sm:text-left">
                   {/* Hidden File Input for Avatar Upload to Supabase Storage */}
                   <input
                     ref={fileInputRef}
@@ -420,7 +420,7 @@ export const SetupProfile: React.FC = () => {
 
                   {/* Circular Preview with Camera Badge */}
                   <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center overflow-hidden text-slate-400">
+                    <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-[#0E141F] border-2 border-[#1F293A] shadow-sm flex items-center justify-center overflow-hidden text-slate-500">
                       {avatarUrl ? (
                         <img
                           src={avatarUrl}
@@ -429,11 +429,11 @@ export const SetupProfile: React.FC = () => {
                           onError={() => setAvatarUrl('')}
                         />
                       ) : (
-                        <User size={30} className="text-slate-400" />
+                        <User size={30} className="text-slate-500" />
                       )}
                     </div>
                     {/* Camera Icon Overlay */}
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#FF9900] text-white flex items-center justify-center shadow-xs ring-2 ring-white">
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#FF9900] text-slate-950 flex items-center justify-center shadow-xs ring-2 ring-[#121824]">
                       {isUploadingPhoto ? (
                         <Loader2 size={12} className="animate-spin" />
                       ) : (
@@ -445,14 +445,14 @@ export const SetupProfile: React.FC = () => {
                   {/* Upload Controls & Actions */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-center sm:justify-between gap-2 flex-wrap">
-                      <span className="text-xs font-semibold text-slate-800 font-mono">
+                      <span className="text-xs font-semibold text-slate-200 font-mono">
                         Profile photo
                       </span>
                       {avatarUrl && (
                         <button
                           type="button"
                           onClick={handleSkipPhoto}
-                          className="text-[11px] text-rose-500 hover:text-rose-600 font-medium inline-flex items-center gap-1 cursor-pointer"
+                          className="text-[11px] text-rose-400 hover:text-rose-300 font-medium inline-flex items-center gap-1 cursor-pointer"
                         >
                           <X size={12} />
                           <span>Remove</span>
@@ -465,7 +465,7 @@ export const SetupProfile: React.FC = () => {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploadingPhoto}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 hover:border-slate-400 text-slate-700 shadow-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0E141F] border border-[#1F293A] hover:border-slate-500 text-slate-200 shadow-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                       >
                         <Upload size={13} />
                         <span>{avatarUrl ? 'Change photo' : 'Upload photo'}</span>
@@ -475,7 +475,7 @@ export const SetupProfile: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleSkipPhoto}
-                          className="px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                          className="px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
                         >
                           Skip option
                         </button>
@@ -494,108 +494,108 @@ export const SetupProfile: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Full Name * */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Full name <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Full name <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                       <input
                         type="text"
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="e.g. Preeti Sharma"
-                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
+                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
                       />
                     </div>
                   </div>
 
                   {/* Community Member Tag * */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Community member tag <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Community member tag <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <AtSign size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <AtSign size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                       <input
                         type="text"
                         required
                         value={alias}
                         onChange={(e) => setAlias(e.target.value)}
                         placeholder="e.g. preeti-cloud"
-                        className="w-full pl-9 pr-3 py-2 text-sm font-mono rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
+                        className="w-full pl-9 pr-3 py-2 text-sm font-mono rounded-lg bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
                       />
                     </div>
                   </div>
 
                   {/* Email * (Read-Only) */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Email <span className="text-rose-500">*</span>{' '}
-                      <span className="text-[11px] text-slate-400 font-normal">(Read-only)</span>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Email <span className="text-rose-400">*</span>{' '}
+                      <span className="text-[11px] text-slate-500 font-normal">(Read-only)</span>
                     </label>
                     <div className="relative">
-                      <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                       <input
                         type="email"
                         readOnly
                         disabled
                         value={user?.email || profile?.email || ''}
-                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed select-none font-mono"
+                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[#18202E] border border-[#1F293A] text-slate-400 cursor-not-allowed select-none font-mono"
                       />
                     </div>
                   </div>
 
                   {/* Phone Number * */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Phone number <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Phone number <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                       <input
                         type="tel"
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+91 98765 43210"
-                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
+                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
                       />
                     </div>
                   </div>
 
                   {/* Institution Name * */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Institution name <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Institution name <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <Building2 size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Building2 size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                       <input
                         type="text"
                         required
                         value={institutionName}
                         onChange={(e) => setInstitutionName(e.target.value)}
                         placeholder="e.g. PSIT Kanpur"
-                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
+                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
                       />
                     </div>
                   </div>
 
                   {/* Institution Address * */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Institution address <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Institution address <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                       <input
                         type="text"
                         required
                         value={institutionAddress}
                         onChange={(e) => setInstitutionAddress(e.target.value)}
                         placeholder="e.g. Kanpur, Uttar Pradesh, India"
-                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20"
+                        className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]"
                       />
                     </div>
                   </div>
@@ -604,22 +604,22 @@ export const SetupProfile: React.FC = () => {
                 {/* Bio & Cloud Interests (Spanning full width with Character Counter) */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-slate-700">
+                    <label className="block text-xs font-semibold text-slate-300">
                       Bio
                     </label>
-                    <span className="text-[11px] text-slate-400 font-mono">
+                    <span className="text-[11px] text-slate-500 font-mono">
                       {bio.length} / 250
                     </span>
                   </div>
                   <div className="relative">
-                    <FileText size={15} className="absolute left-3 top-3 text-slate-400" />
+                    <FileText size={15} className="absolute left-3 top-3 text-slate-500" />
                     <textarea
                       rows={3}
                       maxLength={250}
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       placeholder="Tell your community a little about yourself (e.g. Cloud Security, Serverless, AI/ML)..."
-                      className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20 resize-none"
+                      className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] resize-none"
                     />
                   </div>
                 </div>
@@ -629,7 +629,7 @@ export const SetupProfile: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleBack}
-                    className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 bg-[#18202E] border border-[#1F293A] hover:bg-[#1E293B] hover:text-white transition-colors inline-flex items-center gap-1.5 cursor-pointer font-mono"
                   >
                     <ArrowLeft size={15} />
                     <span>Back</span>
@@ -638,7 +638,7 @@ export const SetupProfile: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#FF9900] hover:bg-[#EC7211] active:bg-[#D9650B] shadow-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] active:bg-[#D9650B] shadow-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 font-mono"
                   >
                     {isSaving ? (
                       <>
@@ -661,33 +661,33 @@ export const SetupProfile: React.FC = () => {
           {/* ============================================================== */}
           <aside className="hidden lg:flex lg:col-span-3 flex-col gap-4">
             {/* Guidance Card */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 uppercase tracking-wider mb-2 font-mono">
+            <div className="bg-[#121824] rounded-2xl border border-[#1F293A] shadow-xl p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 font-mono">
                 <HelpCircle size={14} className="text-[#FF9900]" />
                 <span>Contextual Guidance</span>
               </div>
-              <h3 className="text-sm font-bold text-slate-900 mb-3 font-mono">
+              <h3 className="text-sm font-bold text-white mb-3 font-mono">
                 Profile Best Practices
               </h3>
 
-              <div className="space-y-3.5 text-xs text-slate-600 leading-relaxed">
+              <div className="space-y-3.5 text-xs text-slate-400 leading-relaxed">
                 <div>
-                  <span className="font-semibold text-slate-800">Builder Tag:</span>
-                  <p className="text-slate-500 mt-0.5">
+                  <span className="font-semibold text-slate-200">Builder Tag:</span>
+                  <p className="text-slate-400 mt-0.5">
                     Your persistent username across project showcases, peer reviews, and leaderboards. Keep it memorable.
                   </p>
                 </div>
 
                 <div>
-                  <span className="font-semibold text-slate-800">Institution:</span>
-                  <p className="text-slate-500 mt-0.5">
+                  <span className="font-semibold text-slate-200">Institution:</span>
+                  <p className="text-slate-400 mt-0.5">
                     Ensures your achievements contribute directly to your campus chapter ranking and community visibility.
                   </p>
                 </div>
 
                 <div>
-                  <span className="font-semibold text-slate-800">Bio Interests:</span>
-                  <p className="text-slate-500 mt-0.5">
+                  <span className="font-semibold text-slate-200">Bio Interests:</span>
+                  <p className="text-slate-400 mt-0.5">
                     Mention specific AWS services (e.g. Lambda, Bedrock, DynamoDB) to match with project collaborators.
                   </p>
                 </div>
@@ -695,12 +695,12 @@ export const SetupProfile: React.FC = () => {
             </div>
 
             {/* Privacy & Security Note */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 mb-1 font-mono">
-                <ShieldCheck size={15} className="text-emerald-600" />
+            <div className="bg-[#121824] rounded-2xl border border-[#1F293A] shadow-xl p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 mb-1 font-mono">
+                <ShieldCheck size={15} className="text-emerald-400" />
                 <span>Data Privacy</span>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <p className="text-xs text-slate-400 leading-relaxed">
                 Your email and phone are protected by Supabase RLS and used solely for authentic chapter notifications and account security.
               </p>
             </div>
@@ -709,7 +709,7 @@ export const SetupProfile: React.FC = () => {
       </main>
 
       {/* Consistent Bottom Platform Label */}
-      <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-400 font-mono">
+      <footer className="relative z-10 w-full py-4 text-center text-xs text-slate-500 font-mono">
         AWS Journey Tracker • Community platform
       </footer>
     </div>

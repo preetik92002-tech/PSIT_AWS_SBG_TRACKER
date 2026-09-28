@@ -18,3 +18,9 @@ export { PageHeader } from './PageHeader'
 
 // Global Brand Asset
 export { AWSLogo } from './AWSLogo'
+
+// Community Identity & Builder Identity Assets
+export { CommunityImage } from './CommunityImage'
+export type { CommunityImageSize } from './CommunityImage'
+export { BuilderAvatar } from './BuilderAvatar'
+export type { BuilderAvatarSize } from './BuilderAvatar'

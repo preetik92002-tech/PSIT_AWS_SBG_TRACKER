@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   Mail,
   Calendar,
@@ -23,13 +23,15 @@ import {
   Layers,
   Activity as ActivityIcon,
 } from 'lucide-react'
-import { Avatar } from '@/components/ui/Avatar'
+import { BuilderAvatar } from '@/components/ui/BuilderAvatar'
 import { useAuth } from '@/context/AuthContext'
 import { useCommunity } from '@/context/CommunityContext'
 import { supabase } from '@/lib/supabase/client'
 import { getLevelProgress, timeAgo } from '@/utils/cn'
+import { getMemberAWSBuilderProfile } from '@/types/awsBadges'
+import { AWSBuilderCenterSection, AWSBadgesTabContent } from '@/components/badges'
 
-type ProfileTab = 'profile' | 'community' | 'learning' | 'activity' | 'achievements'
+type ProfileTab = 'profile' | 'aws_badges' | 'community' | 'learning' | 'activity' | 'achievements'
 
 export const ProfileForm: React.FC = () => {
   const { user, profile, refreshProfile } = useAuth()
@@ -43,6 +45,14 @@ export const ProfileForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Derive connected AWS Builder Profile
+  const builderProfile = useMemo(() => {
+    return getMemberAWSBuilderProfile(
+      profile?.aws_builder_alias,
+      profile?.aws_builder_profile_url
+    )
+  }, [profile?.aws_builder_alias, profile?.aws_builder_profile_url])
 
   // Real stats fetched from database
   const [xp, setXp] = useState<number>(0)
@@ -316,11 +326,12 @@ export const ProfileForm: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Avatar with Camera Upload Button */}
             <div className="relative group flex-shrink-0">
-              <Avatar
-                initials={initials}
+              <BuilderAvatar
+                name={displayName}
+                alias={profile?.aws_builder_alias}
                 src={profile?.avatar_url}
-                size="xl"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-slate-700/80 shadow-md object-cover"
+                size="2xl"
+                isManager={userRoleInActiveCommunity === 'manager'}
               />
 
               {/* Camera change photo button */}
@@ -428,6 +439,7 @@ export const ProfileForm: React.FC = () => {
         <div className="border-t border-slate-800/80 bg-[#080B11] px-6 flex items-center gap-1 overflow-x-auto scrollbar-none">
           {[
             { id: 'profile' as const, label: 'PROFILE' },
+            { id: 'aws_badges' as const, label: `AWS BADGES (${builderProfile.badgeCount})` },
             { id: 'community' as const, label: 'COMMUNITY' },
             { id: 'learning' as const, label: 'LEARNING' },
             { id: 'activity' as const, label: 'ACTIVITY' },
@@ -453,23 +465,30 @@ export const ProfileForm: React.FC = () => {
       {/* TAB CONTENT: PROFILE (IDENTITY & EDITING) */}
       {/* ========================================================================= */}
       {activeTab === 'profile' && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+        <div className="rounded-xl border border-[#1F293A] bg-[#121824] p-6 shadow-xs">
+          <div className="flex items-center justify-between pb-4 border-b border-[#1F293A] mb-6">
             <div>
-              <h2 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              <h2 className="text-sm font-bold font-mono text-white uppercase tracking-wider">
                 AWS Builder Identity
               </h2>
-              <p className="text-xs text-slate-500 font-sans mt-0.5">
+              <p className="text-xs text-slate-400 font-sans mt-0.5">
                 Official profile details connected to your AWS Builder account.
               </p>
             </div>
+          </div>
+
+          <div className="mb-6">
+            <AWSBuilderCenterSection
+              builderProfile={builderProfile}
+              onViewBadgesTab={() => setActiveTab('aws_badges')}
+            />
           </div>
 
           <form onSubmit={handleSave}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Full Name */}
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                   Full Name
                 </label>
                 {isEditing ? (
@@ -480,10 +499,10 @@ export const ProfileForm: React.FC = () => {
                     onChange={handleChange}
                     disabled={isSaving}
                     required
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-sans focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0E141F] border border-[#1F293A] text-white text-sm font-sans focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
                   />
                 ) : (
-                  <p className="text-sm font-mono text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                  <p className="text-sm font-mono text-slate-200 bg-[#18202E] p-2.5 rounded-lg border border-[#1F293A]">
                     {profile?.full_name || '—'}
                   </p>
                 )}
@@ -491,12 +510,12 @@ export const ProfileForm: React.FC = () => {
 
               {/* Email (Read-only) */}
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                   Email Address
                 </label>
-                <p className="text-sm font-mono text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-100 flex items-center justify-between">
+                <p className="text-sm font-mono text-slate-200 bg-[#18202E] p-2.5 rounded-lg border border-[#1F293A] flex items-center justify-between">
                   <span>{displayEmail}</span>
-                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
                     Verified
                   </span>
                 </p>
@@ -504,7 +523,7 @@ export const ProfileForm: React.FC = () => {
 
               {/* Phone */}
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                   Phone Number
                 </label>
                 {isEditing ? (
@@ -515,10 +534,10 @@ export const ProfileForm: React.FC = () => {
                     onChange={handleChange}
                     disabled={isSaving}
                     placeholder="+91 98765 43210"
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0E141F] border border-[#1F293A] text-white text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
                   />
                 ) : (
-                  <p className="text-sm font-mono text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                  <p className="text-sm font-mono text-slate-200 bg-[#18202E] p-2.5 rounded-lg border border-[#1F293A]">
                     {profile?.phone || 'Not provided'}
                   </p>
                 )}
@@ -526,7 +545,7 @@ export const ProfileForm: React.FC = () => {
 
               {/* Institution Name */}
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                   Institution Name
                 </label>
                 {isEditing ? (
@@ -537,10 +556,10 @@ export const ProfileForm: React.FC = () => {
                     onChange={handleChange}
                     disabled={isSaving}
                     placeholder="e.g. PSIT Kanpur"
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-sans focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0E141F] border border-[#1F293A] text-white text-sm font-sans focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
                   />
                 ) : (
-                  <p className="text-sm font-mono text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                  <p className="text-sm font-mono text-slate-200 bg-[#18202E] p-2.5 rounded-lg border border-[#1F293A]">
                     {profile?.institution_name || 'Not provided'}
                   </p>
                 )}
@@ -548,7 +567,7 @@ export const ProfileForm: React.FC = () => {
 
               {/* AWS Builder Alias */}
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                   AWS Builder Alias
                 </label>
                 {isEditing ? (
@@ -563,11 +582,11 @@ export const ProfileForm: React.FC = () => {
                       onChange={handleChange}
                       disabled={isSaving}
                       placeholder="builder_alias"
-                      className="w-full pl-8 pr-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                      className="w-full pl-8 pr-3 py-2 rounded-lg bg-[#0E141F] border border-[#1F293A] text-white text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
                     />
                   </div>
                 ) : (
-                  <p className="text-sm font-mono text-[#EA580C] bg-orange-50/60 p-2.5 rounded-lg border border-orange-200/80 font-semibold flex items-center gap-1">
+                  <p className="text-sm font-mono text-[#FF9900] bg-[#FF9900]/10 p-2.5 rounded-lg border border-[#FF9900]/30 font-semibold flex items-center gap-1">
                     <Terminal size={14} />
                     {profile?.aws_builder_alias ? `@${profile.aws_builder_alias}` : 'Not connected'}
                   </p>
@@ -576,7 +595,7 @@ export const ProfileForm: React.FC = () => {
 
               {/* AWS Builder Profile URL */}
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                   AWS Builder Profile URL
                 </label>
                 {isEditing ? (
@@ -587,20 +606,20 @@ export const ProfileForm: React.FC = () => {
                     onChange={handleChange}
                     disabled={isSaving}
                     placeholder="https://builder.aws/user/..."
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0E141F] border border-[#1F293A] text-white text-sm font-mono focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
                   />
                 ) : profile?.aws_builder_profile_url ? (
                   <a
                     href={profile.aws_builder_profile_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm font-mono text-[#EA580C] hover:underline p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center gap-1.5 truncate"
+                    className="text-sm font-mono text-[#FF9900] hover:underline p-2.5 rounded-lg bg-[#18202E] border border-[#1F293A] flex items-center gap-1.5 truncate"
                   >
                     <ExternalLink size={13} className="flex-shrink-0" />
                     <span className="truncate">{profile.aws_builder_profile_url}</span>
                   </a>
                 ) : (
-                  <p className="text-sm font-mono text-slate-400 bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic">
+                  <p className="text-sm font-mono text-slate-500 bg-[#18202E] p-2.5 rounded-lg border border-[#1F293A] italic">
                     Not connected
                   </p>
                 )}
@@ -608,7 +627,7 @@ export const ProfileForm: React.FC = () => {
 
               {/* Bio */}
               <div className="md:col-span-2">
-                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                   Bio / Builder Objectives
                 </label>
                 {isEditing ? (
@@ -619,10 +638,10 @@ export const ProfileForm: React.FC = () => {
                     onChange={handleChange}
                     disabled={isSaving}
                     placeholder="Tell your community what AWS cloud services you are building with..."
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm font-sans focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
+                    className="w-full px-3 py-2 rounded-lg bg-[#0E141F] border border-[#1F293A] text-white text-sm font-sans focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors"
                   />
                 ) : (
-                  <p className="text-sm text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 font-sans">
+                  <p className="text-sm text-slate-300 leading-relaxed bg-[#18202E] p-3 rounded-lg border border-[#1F293A] font-sans">
                     {profile?.bio || 'No bio provided yet.'}
                   </p>
                 )}
@@ -631,12 +650,12 @@ export const ProfileForm: React.FC = () => {
 
             {/* Save Button */}
             {isEditing && (
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+              <div className="mt-6 pt-4 border-t border-[#1F293A] flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="px-4 py-2 rounded-lg text-xs font-mono font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg text-xs font-mono font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -664,57 +683,64 @@ export const ProfileForm: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
+      {/* TAB CONTENT: AWS BADGES */}
+      {/* ========================================================================= */}
+      {activeTab === 'aws_badges' && (
+        <AWSBadgesTabContent builderProfile={builderProfile} />
+      )}
+
+      {/* ========================================================================= */}
       {/* TAB CONTENT: COMMUNITY */}
       {/* ========================================================================= */}
       {activeTab === 'community' && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="rounded-xl border border-[#1F293A] bg-[#121824] p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293A]">
             <div>
-              <h2 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              <h2 className="text-sm font-bold font-mono text-white uppercase tracking-wider">
                 Current Community Affiliation
               </h2>
-              <p className="text-xs text-slate-500 font-sans mt-0.5">
+              <p className="text-xs text-slate-400 font-sans mt-0.5">
                 Your registered AWS student chapter details.
               </p>
             </div>
-            <span className="font-mono text-xs text-[#EA580C] bg-orange-50 px-2.5 py-1 rounded border border-orange-200 font-semibold">
+            <span className="font-mono text-xs text-[#FF9900] bg-[#FF9900]/10 px-2.5 py-1 rounded border border-[#FF9900]/30 font-semibold">
               {isManager ? '👑 Chapter Manager' : 'Active Member'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <div className="p-4 rounded-lg bg-[#18202E] border border-[#1F293A]">
               <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1">
                 Community
               </span>
-              <p className="text-sm font-mono font-bold text-slate-900 truncate">
+              <p className="text-sm font-mono font-bold text-white truncate">
                 {activeCommunity?.name || 'Default Chapter'}
               </p>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
                 {activeCommunity?.short_name || 'AWS-HUB'}
               </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <div className="p-4 rounded-lg bg-[#18202E] border border-[#1F293A]">
               <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1">
                 Institution & City
               </span>
-              <p className="text-sm font-mono font-bold text-slate-900 truncate">
+              <p className="text-sm font-mono font-bold text-white truncate">
                 {activeCommunity?.institution_name || profile?.institution_name || 'Academic Hub'}
               </p>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
                 {activeCommunity?.city || 'India'}
               </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-100">
+            <div className="p-4 rounded-lg bg-[#18202E] border border-[#1F293A]">
               <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1">
                 Role & Membership
               </span>
-              <p className="text-sm font-mono font-bold text-slate-900">
+              <p className="text-sm font-mono font-bold text-white">
                 {isManager ? '👑 Community Manager' : 'Community Member'}
               </p>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
                 Joined {joinedDate}
               </p>
             </div>
@@ -726,18 +752,18 @@ export const ProfileForm: React.FC = () => {
       {/* TAB CONTENT: LEARNING */}
       {/* ========================================================================= */}
       {activeTab === 'learning' && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="rounded-xl border border-[#1F293A] bg-[#121824] p-6 shadow-xs space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293A]">
             <div>
-              <h2 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              <h2 className="text-sm font-bold font-mono text-white uppercase tracking-wider">
                 Learning Progress
               </h2>
-              <p className="text-xs text-slate-500 font-sans mt-0.5">
+              <p className="text-xs text-slate-400 font-sans mt-0.5">
                 Computed from verified community task submissions and hands-on deliverables.
               </p>
             </div>
             <div className="text-right">
-              <span className="text-sm font-mono font-bold text-slate-900">
+              <span className="text-sm font-mono font-bold text-white">
                 Level {level}
               </span>
               <span className="text-xs text-slate-400 font-mono ml-2">
@@ -748,11 +774,11 @@ export const ProfileForm: React.FC = () => {
 
           {/* XP Progress Bar */}
           <div>
-            <div className="flex justify-between text-xs font-mono text-slate-500 mb-1.5">
+            <div className="flex justify-between text-xs font-mono text-slate-400 mb-1.5">
               <span>Level Progress</span>
-              <span className="text-[#EA580C] font-semibold">{progress.toFixed(0)}%</span>
+              <span className="text-[#FF9900] font-semibold">{progress.toFixed(0)}%</span>
             </div>
-            <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#1E293B] h-2.5 rounded-full overflow-hidden">
               <div
                 className="bg-gradient-to-r from-[#FF9900] to-[#EA580C] h-full rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
@@ -768,26 +794,26 @@ export const ProfileForm: React.FC = () => {
               { label: 'Current Tier', value: `Level ${level}`, icon: <Shield size={16} /> },
               { label: 'Services Practiced', value: '8 AWS', icon: <Layers size={16} /> },
             ].map((m) => (
-              <div key={m.label} className="p-3.5 rounded-lg bg-slate-50 border border-slate-100">
+              <div key={m.label} className="p-3.5 rounded-lg bg-[#18202E] border border-[#1F293A]">
                 <div className="flex items-center justify-between text-slate-400 mb-1">
                   <span className="text-[10px] font-mono uppercase tracking-wider">{m.label}</span>
                   {m.icon}
                 </div>
-                <p className="text-base font-mono font-bold text-slate-900">{m.value}</p>
+                <p className="text-base font-mono font-bold text-white">{m.value}</p>
               </div>
             ))}
           </div>
 
           {/* Tracked AWS Services */}
           <div>
-            <span className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-2">
+            <span className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-2">
               Tracked AWS Services
             </span>
             <div className="flex flex-wrap gap-1.5">
               {['AWS Lambda', 'Amazon S3', 'Amazon DynamoDB', 'AWS IAM', 'Amazon Bedrock', 'Amazon ECS', 'Amazon CloudFront', 'API Gateway'].map((svc) => (
                 <span
                   key={svc}
-                  className="px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700"
+                  className="px-2.5 py-1 rounded bg-[#18202E] border border-[#1F293A] text-xs font-mono text-slate-300"
                 >
                   {svc}
                 </span>
@@ -801,29 +827,29 @@ export const ProfileForm: React.FC = () => {
       {/* TAB CONTENT: ACTIVITY */}
       {/* ========================================================================= */}
       {activeTab === 'activity' && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div className="pb-3 border-b border-slate-100">
-            <h2 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+        <div className="rounded-xl border border-[#1F293A] bg-[#121824] p-6 shadow-xs space-y-4">
+          <div className="pb-3 border-b border-[#1F293A]">
+            <h2 className="text-sm font-bold font-mono text-white uppercase tracking-wider">
               Recent Activity Feed
             </h2>
-            <p className="text-xs text-slate-500 font-sans mt-0.5">
+            <p className="text-xs text-slate-400 font-sans mt-0.5">
               Real-time events recorded in your community ledger.
             </p>
           </div>
 
           {userActivities.length === 0 ? (
-            <div className="py-8 text-center text-xs font-mono text-slate-400">
+            <div className="py-8 text-center text-xs font-mono text-slate-500">
               No recent activity records found. Complete a task or attend an event to record activity.
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[#1F293A]">
               {userActivities.map((act) => (
                 <div key={act.id} className="py-3 flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-md bg-amber-500/10 border border-amber-500/30 text-[#EA580C] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-7 h-7 rounded-md bg-[#FF9900]/15 border border-[#FF9900]/30 text-[#FF9900] flex items-center justify-center flex-shrink-0 mt-0.5">
                     <ActivityIcon size={13} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-mono font-medium text-slate-800">
+                    <p className="text-xs font-mono font-medium text-slate-200">
                       {act.description}
                     </p>
                     <span className="text-[10px] font-mono text-slate-400">
@@ -841,12 +867,12 @@ export const ProfileForm: React.FC = () => {
       {/* TAB CONTENT: ACHIEVEMENTS */}
       {/* ========================================================================= */}
       {activeTab === 'achievements' && (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div className="pb-3 border-b border-slate-100">
-            <h2 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+        <div className="rounded-xl border border-[#1F293A] bg-[#121824] p-6 shadow-xs space-y-4">
+          <div className="pb-3 border-b border-[#1F293A]">
+            <h2 className="text-sm font-bold font-mono text-white uppercase tracking-wider">
               Meaningful Milestone Achievements
             </h2>
-            <p className="text-xs text-slate-500 font-sans mt-0.5">
+            <p className="text-xs text-slate-400 font-sans mt-0.5">
               Verified community achievements and milestones.
             </p>
           </div>
@@ -888,21 +914,21 @@ export const ProfileForm: React.FC = () => {
                 key={a.title}
                 className={`p-4 rounded-lg border transition-all ${
                   a.unlocked
-                    ? 'bg-slate-50/80 border-slate-200 text-slate-900'
-                    : 'bg-slate-50/30 border-slate-100 text-slate-400 opacity-60'
+                    ? 'bg-[#18202E] border-[#1F293A] text-white'
+                    : 'bg-[#18202E]/40 border-[#1F293A]/50 text-slate-400 opacity-60'
                 }`}
               >
                 <div className="text-2xl mb-2">{a.icon}</div>
                 <h3 className="text-xs font-mono font-bold">{a.title}</h3>
-                <p className="text-[11px] font-sans text-slate-500 mt-1 leading-snug">
+                <p className="text-[11px] font-sans text-slate-400 mt-1 leading-snug">
                   {a.desc}
                 </p>
                 <div className="mt-2.5">
                   <span
                     className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
                       a.unlocked
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : 'bg-slate-100 text-slate-400'
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-slate-800 text-slate-400'
                     }`}
                   >
                     {a.unlocked ? 'Unlocked' : 'In Progress'}

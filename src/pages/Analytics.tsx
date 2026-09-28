@@ -98,40 +98,40 @@ export const Analytics: React.FC = () => {
             label: 'Total Chapter Builders',
             value: metrics.totalMembers,
             sub: `${activeRatio}% active this week`,
-            icon: <Users size={16} className="text-[#EA580C]" />,
+            icon: <Users size={16} className="text-[#FF9900]" />,
           },
           {
             label: 'Task Deliverables',
             value: metrics.completedTasks,
             sub: `${completionRate}% completion rate`,
-            icon: <CheckSquare size={16} className="text-[#EA580C]" />,
+            icon: <CheckSquare size={16} className="text-[#FF9900]" />,
           },
           {
             label: 'Technical Events',
             value: metrics.totalEvents,
             sub: 'Workshops & hackathons',
-            icon: <Calendar size={16} className="text-blue-500" />,
+            icon: <Calendar size={16} className="text-blue-400" />,
           },
           {
             label: 'Cloud Projects',
             value: metrics.totalProjects,
             sub: 'Repositories deployed',
-            icon: <Layers size={16} className="text-blue-500" />,
+            icon: <Layers size={16} className="text-blue-400" />,
           },
         ].map((card) => (
           <div
             key={card.label}
-            className="p-5 rounded-xl border border-slate-200 bg-white shadow-2xs hover:border-slate-300 transition-colors"
+            className="p-5 rounded-xl border border-[#1F293A] bg-[#121824] shadow-2xs hover:border-slate-600 transition-colors"
           >
             <div className="flex items-center justify-between text-slate-400 mb-2">
               <span className="text-[10px] font-mono uppercase tracking-wider">{card.label}</span>
               {card.icon}
             </div>
-            <p className="text-2xl font-mono font-bold text-slate-900 tracking-tight">
+            <p className="text-2xl font-mono font-bold text-white tracking-tight">
               {card.value}
             </p>
-            <p className="text-[11px] font-mono text-slate-500 mt-1 flex items-center gap-1">
-              <ArrowUpRight size={11} className="text-emerald-600" />
+            <p className="text-[11px] font-mono text-slate-400 mt-1 flex items-center gap-1">
+              <ArrowUpRight size={11} className="text-emerald-400" />
               {card.sub}
             </p>
           </div>
@@ -141,17 +141,17 @@ export const Analytics: React.FC = () => {
       {/* Technical Line Grid Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Activity Grid */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="rounded-xl border border-[#1F293A] bg-[#121824] p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293A]">
             <div>
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-900">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
                 Weekly Engagement Velocity
               </h2>
-              <p className="text-xs text-slate-500 font-sans mt-0.5">
+              <p className="text-xs text-slate-400 font-sans mt-0.5">
                 Task completion rhythm over active sprint cycles.
               </p>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-50 text-[#EA580C] border border-orange-200 font-semibold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FF9900]/15 text-[#FF9900] border border-[#FF9900]/30 font-semibold">
               Live Metrics
             </span>
           </div>
@@ -171,13 +171,13 @@ export const Analytics: React.FC = () => {
                 <span className="w-8 text-[11px] font-mono text-slate-400 font-medium">
                   {bar.day}
                 </span>
-                <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div className="flex-1 bg-[#0E141F] h-2 rounded-full overflow-hidden border border-[#1F293A]/50">
                   <div
                     className="bg-[#FF9900] h-full rounded-full transition-all duration-500"
                     style={{ width: `${bar.pct}%` }}
                   />
                 </div>
-                <span className="w-10 text-right text-[11px] font-mono text-slate-600 font-semibold">
+                <span className="w-10 text-right text-[11px] font-mono text-slate-300 font-semibold">
                   {bar.count}
                 </span>
               </div>
@@ -186,17 +186,17 @@ export const Analytics: React.FC = () => {
         </div>
 
         {/* AWS Service Distribution */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="rounded-xl border border-[#1F293A] bg-[#121824] p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1F293A]">
             <div>
-              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-900">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
                 AWS Service Domain Coverage
               </h2>
-              <p className="text-xs text-slate-500 font-sans mt-0.5">
+              <p className="text-xs text-slate-400 font-sans mt-0.5">
                 Distribution of hands-on challenge architectures.
               </p>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-semibold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-950/50 text-blue-400 border border-blue-800 font-semibold">
               Ecosystem
             </span>
           </div>
@@ -210,12 +210,12 @@ export const Analytics: React.FC = () => {
             ].map((item) => (
               <div key={item.service} className="space-y-1">
                 <div className="flex justify-between text-xs font-mono">
-                  <span className="text-slate-700 font-medium">{item.service}</span>
-                  <span className="text-slate-400">{item.count}</span>
+                  <span className="text-slate-300 font-medium">{item.service}</span>
+                  <span className="text-slate-500">{item.count}</span>
                 </div>
-                <div className="bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div className="bg-[#0E141F] h-2 rounded-full overflow-hidden border border-[#1F293A]/50">
                   <div
-                    className="bg-blue-600 h-full rounded-full transition-all duration-500"
+                    className="bg-blue-500 h-full rounded-full transition-all duration-500"
                     style={{ width: `${item.pct}%` }}
                   />
                 </div>

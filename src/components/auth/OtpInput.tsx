@@ -88,12 +88,12 @@ export const OtpInput: React.FC<OtpInputProps> = ({
           onPaste={handlePaste}
           disabled={disabled}
           aria-label={`Digit ${index + 1} of 6`}
-          className={`w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono rounded-lg border-2 bg-white text-slate-900 transition-all disabled:opacity-50 ${
+          className={`w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono rounded-lg border-2 text-white transition-all disabled:opacity-50 ${
             hasError
-              ? 'border-rose-400 bg-rose-50/40 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
+              ? 'border-rose-500/80 bg-rose-950/40 focus:border-rose-400 focus:ring-1 focus:ring-rose-500/20 text-rose-300'
               : isSuccess
-              ? 'border-emerald-400 bg-emerald-50/40 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-emerald-800'
-              : 'border-slate-300 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-orange-500/20'
+              ? 'border-emerald-500/80 bg-emerald-950/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500/20 text-emerald-300'
+              : 'border-[#1F293A] bg-[#0E141F] focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]'
           }`}
         />
       ))}

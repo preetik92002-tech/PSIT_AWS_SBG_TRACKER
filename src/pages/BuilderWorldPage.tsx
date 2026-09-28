@@ -18,7 +18,7 @@ import { useCommunity } from '@/context/CommunityContext'
 import { BuilderWorld } from '@/components/world/BuilderWorld'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Modal } from '@/components/ui/Modal'
-import { Avatar } from '@/components/ui/Avatar'
+import { BuilderAvatar, CommunityImage } from '@/components/ui'
 import { generateAppearance } from '@/components/world/generateAppearance'
 import type { WorldMember, WorldActivity, WorldHudStats } from '@/components/world/worldTypes'
 import { getLevelProgress, timeAgo, formatNumber } from '@/utils/cn'
@@ -46,7 +46,12 @@ const MemberModal: React.FC<{ member: WorldMember }> = ({ member }) => {
       {/* Header */}
       <div className="flex gap-4 items-start">
         <div className="flex-shrink-0 flex flex-col items-center gap-2">
-          <Avatar initials={initials} src={member.avatarUrl} size="lg" />
+          <BuilderAvatar
+            name={member.name}
+            src={member.avatarUrl}
+            isManager={member.role === 'manager'}
+            size="lg"
+          />
           <div className="flex flex-col items-center gap-1">
             <span className="level-pip">Lv.{member.level}</span>
             {member.role === 'manager' && (
@@ -340,11 +345,12 @@ export const BuilderWorldPage: React.FC = () => {
         className="flex items-center justify-between px-4 pt-4 pb-3 rounded-lg border border-slate-200 bg-white"
       >
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-500/10 border border-amber-500/30 text-[#EA580C]"
-          >
-            <Globe2 size={16} />
-          </div>
+          <CommunityImage
+            src={activeCommunity?.logo_url}
+            name={activeCommunity?.name}
+            shortName={activeCommunity?.short_name}
+            size="sm"
+          />
           <div>
             <h1 className="font-mono font-bold text-sm text-slate-900 tracking-tight">
               BUILDER WORLD
@@ -558,8 +564,8 @@ export const BuilderWorldPage: React.FC = () => {
                         borderColor: i < activities.length - 1 ? 'var(--border-subtle)' : 'transparent',
                       }}
                     >
-                      <Avatar
-                        initials={act.userName.slice(0, 2).toUpperCase()}
+                      <BuilderAvatar
+                        name={act.userName}
                         size="sm"
                         className="flex-shrink-0 mt-0.5"
                       />

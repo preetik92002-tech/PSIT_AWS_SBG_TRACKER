@@ -40,14 +40,14 @@ export const AuthFormField: React.FC<AuthFormFieldProps> = ({
 }) => {
   return (
     <div className={`space-y-1 ${className}`}>
-      <label className="block text-xs font-semibold text-slate-700">
-        {label} {required && <span className="text-rose-500">*</span>}
+      <label className="block text-xs font-semibold text-slate-300 font-mono">
+        {label} {required && <span className="text-rose-400">*</span>}
       </label>
       <div className="relative">
         {Icon && (
           <Icon
             size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
           />
         )}
         <input
@@ -61,14 +61,14 @@ export const AuthFormField: React.FC<AuthFormFieldProps> = ({
           readOnly={readOnly}
           autoComplete={autoComplete}
           maxLength={maxLength}
-          className={`w-full py-2.5 text-sm rounded-lg border bg-white text-slate-900 transition-all ${
+          className={`w-full py-2.5 text-sm rounded-lg border transition-all text-white placeholder:text-slate-500 font-sans ${
             Icon ? 'pl-10' : 'pl-3.5'
           } ${rightElement ? 'pr-10' : 'pr-3.5'} ${
             readOnly || disabled
-              ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed select-none'
+              ? 'bg-[#18202E] border-[#1F293A] text-slate-500 cursor-not-allowed select-none'
               : error
-              ? 'border-rose-400 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
-              : 'border-slate-300 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-2 focus:ring-amber-500/20'
+              ? 'bg-[#0E141F] border-rose-500/80 focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-500/20'
+              : 'bg-[#0E141F] border-[#1F293A] focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900]'
           }`}
         />
         {rightElement && (
@@ -78,9 +78,9 @@ export const AuthFormField: React.FC<AuthFormFieldProps> = ({
         )}
       </div>
       {error ? (
-        <p className="text-[11px] text-rose-600 mt-1">{error}</p>
+        <p className="text-[11px] text-rose-400 mt-1 font-mono">{error}</p>
       ) : helperText ? (
-        <p className="text-[11px] text-slate-400 mt-1">{helperText}</p>
+        <p className="text-[11px] text-slate-400 mt-1 font-mono">{helperText}</p>
       ) : null}
     </div>
   )

@@ -69,10 +69,10 @@ export const AdminMembers: React.FC = () => {
             type="button"
             onClick={fetchMembers}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-300 bg-[#18202E] hover:bg-[#1E293B] border border-[#1F293A] transition-colors shadow-xs cursor-pointer disabled:opacity-50"
             title="Refresh member list"
           >
-            <RefreshCw size={13} className={isLoading ? 'animate-spin text-[#FF9900]' : 'text-slate-500'} />
+            <RefreshCw size={13} className={isLoading ? 'animate-spin text-[#FF9900]' : 'text-slate-400'} />
             <span>Refresh</span>
           </button>
         }

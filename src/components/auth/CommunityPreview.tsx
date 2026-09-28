@@ -28,9 +28,9 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
   bannerUrl,
 }) => {
   return (
-    <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm relative overflow-hidden transition-all text-slate-800">
+    <div className="rounded-2xl border border-[#1F293A] bg-[#121824] p-5 shadow-sm relative overflow-hidden transition-all text-slate-100">
       {/* Community Banner with AWS Logo */}
-      <div className="h-20 -mx-5 -mt-5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 p-4 flex items-center justify-between text-white relative overflow-hidden">
+      <div className="h-20 -mx-5 -mt-5 bg-gradient-to-r from-[#0E141F] via-[#161E28] to-[#0E141F] border-b border-[#1F293A] p-4 flex items-center justify-between text-white relative overflow-hidden">
         {/* Ambient subtle glow */}
         <div className="absolute -right-8 -top-8 w-28 h-28 bg-[#FF9900]/20 rounded-full blur-xl pointer-events-none" />
 
@@ -59,34 +59,34 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
       {/* Card Body */}
       <div className="pt-4">
         {/* Community Name */}
-        <h3 className="text-base font-bold text-slate-900 leading-snug line-clamp-1 font-mono">
+        <h3 className="text-base font-bold text-white leading-snug line-clamp-1 font-mono">
           {name.trim() || 'Community Name'}
         </h3>
 
         {/* Institution & City */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-600 mt-1.5">
+        <div className="flex items-center gap-1.5 text-xs text-slate-300 mt-1.5">
           <Building2 size={13} className="text-[#FF9900] flex-shrink-0" />
           <span className="line-clamp-1 font-medium">{institution.trim() || 'Institution'}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1">
           <MapPin size={13} className="text-slate-400 flex-shrink-0" />
           <span>{city.trim() || 'City'}</span>
         </div>
 
         {/* Community Description */}
-        <p className="text-xs text-slate-600 mt-3 line-clamp-3 leading-relaxed bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+        <p className="text-xs text-slate-300 mt-3 line-clamp-3 leading-relaxed bg-[#0E141F] p-2.5 rounded-xl border border-[#1F293A]">
           {description?.trim() ||
             'Community description will appear here for student builders.'}
         </p>
 
         {/* Metadata Grid: Manager, Member Count, Creation Date */}
-        <div className="mt-4 pt-3.5 border-t border-slate-100 grid grid-cols-3 gap-2 text-[11px]">
+        <div className="mt-4 pt-3.5 border-t border-[#1F293A] grid grid-cols-3 gap-2 text-[11px]">
           {/* Community Manager */}
           <div>
             <span className="text-slate-400 block text-[10px] uppercase font-mono tracking-wider">
               Manager
             </span>
-            <span className="font-semibold text-slate-800 line-clamp-1">
+            <span className="font-semibold text-white line-clamp-1">
               {managerName}
             </span>
           </div>
@@ -96,14 +96,14 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
             <span className="text-slate-400 block text-[10px] uppercase font-mono tracking-wider">
               Members
             </span>
-            <div className="flex items-center gap-1 font-semibold text-slate-800">
+            <div className="flex items-center gap-1 font-semibold text-white">
               <Users size={12} className="text-[#FF9900]" />
               {memberCount !== null && memberCount !== undefined ? (
                 <span>
                   {memberCount} {memberCount === 1 ? 'member' : 'members'}
                 </span>
               ) : (
-                <span className="text-slate-400 font-normal italic">—</span>
+                <span className="text-slate-500 font-normal italic">—</span>
               )}
             </div>
           </div>
@@ -113,7 +113,7 @@ export const CommunityPreview: React.FC<CommunityPreviewProps> = ({
             <span className="text-slate-400 block text-[10px] uppercase font-mono tracking-wider">
               Created
             </span>
-            <div className="flex items-center gap-1 font-semibold text-slate-800">
+            <div className="flex items-center gap-1 font-semibold text-white">
               <Calendar size={12} className="text-slate-400" />
               <span>{creationDate || 'Today'}</span>
             </div>

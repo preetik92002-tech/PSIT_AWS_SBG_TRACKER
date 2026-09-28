@@ -36,7 +36,7 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members = [] }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name, email, or AWS alias..."
-            className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-lg bg-white border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors shadow-xs"
+            className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-lg bg-[#121824] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] transition-colors shadow-xs"
           />
         </div>
 
@@ -46,12 +46,12 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members = [] }) => {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="appearance-none pl-8 pr-8 py-2 text-xs font-mono rounded-lg bg-white border border-slate-300 text-slate-700 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] cursor-pointer shadow-xs"
+              className="appearance-none pl-8 pr-8 py-2 text-xs font-mono rounded-lg bg-[#121824] border border-[#1F293A] text-slate-200 focus:outline-none focus:border-[#FF9900] focus:ring-1 focus:ring-[#FF9900] cursor-pointer shadow-xs"
             >
-              <option value="all">All Roles</option>
-              <option value="member">Members</option>
-              <option value="builder">Builders</option>
-              <option value="admin">Admins</option>
+              <option value="all" className="bg-[#121824] text-white">All Roles</option>
+              <option value="member" className="bg-[#121824] text-white">Members</option>
+              <option value="builder" className="bg-[#121824] text-white">Builders</option>
+              <option value="admin" className="bg-[#121824] text-white">Admins</option>
             </select>
             <Filter
               size={12}
@@ -59,18 +59,18 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members = [] }) => {
             />
           </div>
 
-          <span className="text-[11px] font-mono text-slate-600 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg shadow-xs font-medium">
+          <span className="text-[11px] font-mono text-slate-400 px-2.5 py-1.5 bg-[#18202E] border border-[#1F293A] rounded-lg shadow-xs font-medium">
             {members.length} members
           </span>
         </div>
       </div>
 
       {/* Table Container */}
-      <div className="rounded-xl border border-slate-200/90 bg-white overflow-hidden shadow-xs">
+      <div className="rounded-xl border border-[#1F293A] bg-[#121824] overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse font-sans text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 font-mono text-[11px] uppercase tracking-wider text-slate-500">
+              <tr className="border-b border-[#1F293A] bg-[#0E141F] font-mono text-[11px] uppercase tracking-wider text-slate-400">
                 <th scope="col" className="py-3 px-4 w-12 text-center">
                   Avatar
                 </th>
@@ -95,35 +95,35 @@ export const MemberTable: React.FC<MemberTableProps> = ({ members = [] }) => {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100 font-mono">
+            <tbody className="divide-y divide-[#1F293A]/60 font-mono">
               {members.length > 0 ? (
                 members.map((m) => (
                   <tr
                     key={m.id}
-                    className="hover:bg-slate-50/80 transition-colors"
+                    className="hover:bg-[#18202E]/60 transition-colors"
                   >
                     <td className="py-3 px-4 text-center">
                       <Avatar initials={m.name.slice(0, 2).toUpperCase()} size="sm" />
                     </td>
-                    <td className="py-3 px-4 font-semibold text-slate-900">
+                    <td className="py-3 px-4 font-semibold text-white">
                       {m.name}
                     </td>
-                    <td className="py-3 px-4 text-slate-500">
+                    <td className="py-3 px-4 text-slate-400">
                       {m.email}
                     </td>
                     <td className="py-3 px-4">
                       <RoleBadge role={m.role} size="sm" />
                     </td>
-                    <td className="py-3 px-4 text-slate-700">
+                    <td className="py-3 px-4 text-[#FF9900]">
                       {m.awsBuilderAlias ? `@${m.awsBuilderAlias}` : '—'}
                     </td>
-                    <td className="py-3 px-4 text-slate-500">
+                    <td className="py-3 px-4 text-slate-400">
                       {m.joinedDate}
                     </td>
                     <td className="py-3 px-4 text-right">
                       <button
                         type="button"
-                        className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
                         aria-label="Actions"
                       >
                         <MoreHorizontal size={14} />
