@@ -77,6 +77,7 @@ export type Community = {
   manager_id: string
   created_by?: string | null
   logo_url?: string | null
+  image_url?: string | null
   banner_url?: string | null
   is_active?: boolean
   created_at: string
@@ -95,6 +96,7 @@ export type CommunityInsert = {
   manager_id: string
   created_by?: string | null
   logo_url?: string | null
+  image_url?: string | null
   banner_url?: string | null
   is_active?: boolean
   created_at?: string
@@ -113,6 +115,7 @@ export type CommunityUpdate = {
   manager_id?: string
   created_by?: string | null
   logo_url?: string | null
+  image_url?: string | null
   banner_url?: string | null
   is_active?: boolean
   created_at?: string
@@ -486,6 +489,56 @@ export type CommunityTaskInsert = {
   created_by?: string | null
   created_at?: string
   updated_at?: string
+}
+
+export type AuditAction =
+  | 'community_created'
+  | 'community_edited'
+  | 'manager_promoted'
+  | 'member_removed'
+  | 'task_approved'
+  | 'task_rejected'
+  | 'points_awarded'
+  | 'event_published'
+  | 'event_deleted'
+  | 'project_modified'
+  | 'google_account_connected'
+  | 'google_meet_created'
+  | 'google_meet_ended'
+  | 'community_settings_changed'
+  | string
+
+export type AuditEntityType =
+  | 'community'
+  | 'member'
+  | 'task'
+  | 'event'
+  | 'project'
+  | 'google_account'
+  | 'google_meet'
+  | 'settings'
+  | 'points'
+  | string
+
+export type AuditLog = {
+  id: string
+  community_id: string
+  actor_user_id: string
+  action: AuditAction
+  entity_type: AuditEntityType
+  entity_id: string | null
+  metadata: Record<string, any>
+  created_at: string
+}
+
+export type AuditLogWithActor = AuditLog & {
+  actor?: {
+    id: string
+    full_name: string | null
+    email: string | null
+    avatar_url: string | null
+    aws_builder_alias: string | null
+  }
 }
 
 export type CommunityTaskAssignment = {
@@ -982,6 +1035,22 @@ export type Database = {
       }
       remove_project_member: {
         Args: { p_project_id: string; p_user_id: string }
+        Returns: Json
+      }
+      get_community_manager_analytics: {
+        Args: { p_community_id: string; p_days?: number | null }
+        Returns: Json
+      }
+      update_community_settings: {
+        Args: { p_community_id: string; p_identity?: Json | null; p_settings?: Json | null }
+        Returns: Json
+      }
+      rotate_community_join_code: {
+        Args: { p_community_id: string; p_custom_code?: string | null }
+        Returns: Json
+      }
+      archive_community: {
+        Args: { p_community_id: string; p_confirm_short_name: string }
         Returns: Json
       }
     }

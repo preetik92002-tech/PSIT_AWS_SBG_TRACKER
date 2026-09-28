@@ -33,6 +33,7 @@ import {
 } from '@/lib/notifications'
 import type { AppNotification } from '@/types/database'
 import { timeAgo } from '@/utils/cn'
+import { GlobalSearchModal } from '@/components/nav/GlobalSearchModal'
 
 const ROUTE_INFO: Record<string, { label: string; group: string }> = {
   '/dashboard': { label: 'Dashboard', group: 'Community' },
@@ -45,6 +46,8 @@ const ROUTE_INFO: Record<string, { label: string; group: string }> = {
   '/events/new': { label: 'Add Event', group: 'Community' },
   '/projects': { label: 'Projects', group: 'Community' },
   '/community': { label: 'Community', group: 'Community' },
+  '/community/settings': { label: 'Community Settings', group: 'Admin' },
+  '/audit-log': { label: 'Audit Trail', group: 'Admin' },
   '/analytics': { label: 'Analytics', group: 'Community' },
   '/notifications': { label: 'Notifications', group: 'Community' },
   '/profile': { label: 'Profile', group: 'Member' },
@@ -58,10 +61,15 @@ const ROUTE_INFO: Record<string, { label: string; group: string }> = {
 
 export interface TopbarProps {
   onOpenMobileNav?: () => void
+  onOpenSearch?: () => void
   className?: string
 }
 
-export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' }) => {
+export const Topbar: React.FC<TopbarProps> = ({
+  onOpenMobileNav,
+  onOpenSearch,
+  className = '',
+}) => {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, role, signOut } = useAuth()
@@ -69,6 +77,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [copiedShare, setCopiedShare] = useState(false)
+  const [searchModalOpen, setSearchModalOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const notifRef = useRef<HTMLDivElement>(null)
 
@@ -203,6 +212,26 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
     }
   }
 
+  const handleOpenSearch = () => {
+    if (onOpenSearch) {
+      onOpenSearch()
+    } else {
+      setSearchModalOpen(true)
+    }
+  }
+
+  // Keyboard shortcut for Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        handleOpenSearch()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onOpenSearch])
+
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Builder'
   const displayEmail = profile?.email || user?.email || 'authenticated@builder.hub'
   const initials = displayName
@@ -272,15 +301,31 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
           </button>
         )}
 
-        {/* Search */}
-        <div className="relative hidden md:block">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="pl-7 pr-2.5 py-1.5 text-xs rounded-lg bg-[#131923] border border-[#222E3E] text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900] focus:bg-[#161F2C] w-28 lg:w-36 transition-all font-mono"
-          />
-        </div>
+        {/* Global Search Trigger (Desktop) */}
+        <button
+          type="button"
+          onClick={handleOpenSearch}
+          className="hidden md:inline-flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg bg-[#131923] hover:bg-[#161F2C] border border-[#222E3E] hover:border-[#FF9900]/50 text-slate-400 hover:text-slate-200 transition-all font-mono cursor-pointer shadow-xs group w-36 lg:w-48 justify-between"
+          title="Search community resources (⌘K or Ctrl+K)"
+        >
+          <div className="flex items-center gap-2 truncate">
+            <Search size={13} className="text-slate-500 group-hover:text-[#FF9900] transition-colors" />
+            <span className="truncate">Search...</span>
+          </div>
+          <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-400 bg-[#0B0F17] rounded border border-[#222E3E]">
+            <span className="text-[9px]">⌘</span>K
+          </kbd>
+        </button>
+
+        {/* Global Search Trigger (Mobile) */}
+        <button
+          type="button"
+          onClick={handleOpenSearch}
+          className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-[#161E29] border border-transparent hover:border-[#232F40] transition-colors cursor-pointer"
+          title="Search community resources"
+        >
+          <Search size={16} />
+        </button>
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
@@ -490,6 +535,14 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileNav, className = '' 
           )}
         </div>
       </div>
+
+      {/* Fallback search modal if not controlled by parent layout */}
+      {!onOpenSearch && (
+        <GlobalSearchModal
+          isOpen={searchModalOpen}
+          onClose={() => setSearchModalOpen(false)}
+        />
+      )}
     </header>
   )
 }

@@ -30,6 +30,7 @@ import { supabase } from '@/lib/supabase/client'
 import { getLevelProgress, timeAgo } from '@/utils/cn'
 import { getMemberAWSBuilderProfile } from '@/types/awsBadges'
 import { AWSBuilderCenterSection, AWSBadgesTabContent } from '@/components/badges'
+import { uploadProfileAvatar } from '@/lib/storageService'
 
 type ProfileTab = 'profile' | 'aws_badges' | 'community' | 'learning' | 'activity' | 'achievements'
 
@@ -148,57 +149,20 @@ export const ProfileForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Handle profile photo upload
+  // Handle profile photo upload (Feature 20: Supabase Storage + Image Management)
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) return
-
-    if (!file.type.startsWith('image/')) {
-      setErrorMessage('Please select a valid image file (PNG, JPG, WebP).')
-      return
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage('Image size must be less than 5MB.')
-      return
-    }
 
     setIsUploadingPhoto(true)
     setErrorMessage(null)
     setFeedbackMessage(null)
 
     try {
-      const fileExt = file.name.split('.').pop() || 'jpg'
-      const filePath = `avatars/${user.id}_${Date.now()}.${fileExt}`
-
-      // Attempt Supabase storage upload
-      let finalAvatarUrl: string | null = null
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { cacheControl: '3600', upsert: true })
-
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath)
-        finalAvatarUrl = urlData?.publicUrl || null
-      } else {
-        console.warn('Storage upload notice, reading as data URL:', uploadError.message)
-        // Fallback to data URL if storage policies are restrictive
-        finalAvatarUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.onerror = reject
-          reader.readAsDataURL(file)
-        })
-      }
-
-      if (finalAvatarUrl) {
-        const { error: dbError } = await supabase
-          .from('profiles')
-          .update({ avatar_url: finalAvatarUrl })
-          .eq('id', user.id)
-
-        if (dbError) throw dbError
-
+      const { url, error } = await uploadProfileAvatar(file, user.id)
+      if (error) {
+        setErrorMessage(error)
+      } else if (url) {
         await refreshProfile()
         setFeedbackMessage('Profile photo updated successfully!')
         setTimeout(() => setFeedbackMessage(null), 4000)

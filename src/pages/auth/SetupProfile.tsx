@@ -27,6 +27,7 @@ import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { AuthProgressIndicator, ProgressStep } from '@/components/auth/AuthProgressIndicator'
 import { AWSLogo } from '@/components/ui/AWSLogo'
+import { uploadProfileAvatar } from '@/lib/storageService'
 
 const ONBOARDING_STEPS: ProgressStep[] = [
   { id: 1, label: 'Account' },
@@ -73,54 +74,28 @@ export const SetupProfile: React.FC = () => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // 2MB size limit
-    if (file.size > 2 * 1024 * 1024) {
-      setErrorMessage('Profile photo must be less than 2MB.')
-      return
-    }
-
-    if (!file.type.startsWith('image/')) {
-      setErrorMessage('Please select a valid image file (JPG, PNG, WebP).')
-      return
-    }
-
     setIsUploadingPhoto(true)
     setErrorMessage(null)
 
     try {
-      const fileExt = file.name.split('.').pop() || 'jpg'
-      const fileName = `${user?.id || 'builder'}_${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
-
-      // Upload file directly to Supabase Storage bucket 'avatars'
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        })
-
-      if (uploadError) {
-        throw new Error(uploadError.message)
-      }
-
-      // Retrieve public URL from Supabase Storage (never raw blob in DB)
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
-
-      if (urlData?.publicUrl) {
-        setAvatarUrl(urlData.publicUrl)
-        setSuccessMessage('Profile photo uploaded to Supabase Storage!')
+      if (user?.id) {
+        const { url, error } = await uploadProfileAvatar(file, user.id)
+        if (error) {
+          throw new Error(error)
+        }
+        if (url) {
+          setAvatarUrl(url)
+          setSuccessMessage('Profile photo uploaded to Supabase Storage!')
+          setTimeout(() => setSuccessMessage(null), 3000)
+        }
+      } else {
+        const localUrl = URL.createObjectURL(file)
+        setAvatarUrl(localUrl)
+        setSuccessMessage('Photo selected.')
         setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
-      console.warn('Storage upload exception, creating local preview:', err)
-      // Graceful fallback for local development if storage is offline
-      const localUrl = URL.createObjectURL(file)
-      setAvatarUrl(localUrl)
-      setSuccessMessage('Photo selected.')
-      setTimeout(() => setSuccessMessage(null), 3000)
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to upload photo.')
     } finally {
       setIsUploadingPhoto(false)
     }

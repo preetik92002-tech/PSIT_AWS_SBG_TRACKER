@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { CommunityImage } from '@/components/ui/CommunityImage'
 import { supabase } from '@/lib/supabase/client'
+import { uploadCommunityImage } from '@/lib/storageService'
 
 export interface ChangeImageModalProps {
   isOpen: boolean
@@ -72,19 +73,12 @@ export const ChangeImageModal: React.FC<ChangeImageModalProps> = ({
       let finalUrl = selectedImage
 
       if (selectedFile) {
-        const fileExt = selectedFile.name.split('.').pop() || 'png'
-        const fileName = `community_${community.id}_${Date.now()}.${fileExt}`
-        const filePath = `community-logos/${fileName}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(filePath, selectedFile, { cacheControl: '3600', upsert: true })
-
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath)
-          if (urlData?.publicUrl) {
-            finalUrl = urlData.publicUrl
-          }
+        const { url, error } = await uploadCommunityImage(selectedFile, community.id)
+        if (error) {
+          throw new Error(error)
+        }
+        if (url) {
+          finalUrl = url
         }
       }
 

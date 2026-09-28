@@ -32,6 +32,8 @@ import { BuilderWorldPage } from '@/pages/BuilderWorldPage'
 import { Community } from '@/pages/Community'
 import { Analytics } from '@/pages/Analytics'
 import { Notifications } from '@/pages/Notifications'
+import { CommunitySettings } from '@/pages/CommunitySettings'
+import { AuditLog } from '@/pages/AuditLog'
 import { Landing } from '@/pages/Landing'
 
 export function App() {
@@ -84,6 +86,8 @@ export function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="builder-world" element={<BuilderWorldPage />} />
                 <Route path="community" element={<Community />} />
+                <Route path="community/settings" element={<CommunitySettings />} />
+                <Route path="audit-log" element={<AuditLog />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
 

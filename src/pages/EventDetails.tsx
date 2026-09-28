@@ -39,6 +39,8 @@ import { supabase } from '@/lib/supabase/client'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { CommunityImage } from '@/components/ui/CommunityImage'
+import { ImageUploadDropzone } from '@/components/ui/ImageUploadDropzone'
+import { uploadEventImage } from '@/lib/storageService'
 import { Modal } from '@/components/ui/Modal'
 import { Avatar } from '@/components/ui/Avatar'
 import { EventStatus, GoogleMeetSpace } from '@/types/database'
@@ -48,6 +50,7 @@ import { ManageGoogleMeetModal } from '@/components/live/ManageGoogleMeetModal'
 
 export interface EventDetailRecord {
   id: string
+  communityId: string
   title: string
   description: string
   eventType: string
@@ -112,6 +115,7 @@ export const EventDetails: React.FC = () => {
   const [eventMeetSpace, setEventMeetSpace] = useState<GoogleMeetSpace | null>(null)
   const [isCreateMeetOpen, setIsCreateMeetOpen] = useState(false)
   const [isManageMeetOpen, setIsManageMeetOpen] = useState(false)
+  const [isCoverModalOpen, setIsCoverModalOpen] = useState(false)
 
   const isManager = userRoleInActiveCommunity === 'manager'
 
@@ -189,6 +193,7 @@ export const EventDetails: React.FC = () => {
 
       setEventData({
         id: ev.id,
+        communityId: ev.community_id || activeCommunity?.id || '',
         title: ev.title,
         description: ev.description || '',
         eventType: ev.event_type || 'Workshop',
@@ -530,18 +535,40 @@ export const EventDetails: React.FC = () => {
       <div className="rounded-2xl border border-[#1F293A] bg-[#121824] overflow-hidden shadow-xs">
         {/* Event Cover Image (Banner) - Event-Specific, Not Community Image */}
         {eventData.imageUrl ? (
-          <div className="w-full h-64 md:h-80 bg-[#0E141F] relative overflow-hidden border-b border-[#1F293A]">
+          <div className="w-full h-64 md:h-80 bg-[#0E141F] relative overflow-hidden border-b border-[#1F293A] group">
             <img
               src={eventData.imageUrl}
               alt={eventData.title}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#121824] via-transparent to-transparent" />
+            {isManager && (
+              <button
+                type="button"
+                onClick={() => setIsCoverModalOpen(true)}
+                className="absolute top-4 right-4 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-[#0B0F17]/80 hover:bg-[#0B0F17] text-white border border-[#222E3E] hover:border-[#FF9900] transition-colors flex items-center gap-1.5 shadow-lg cursor-pointer z-10"
+              >
+                <Camera size={13} className="text-[#FF9900]" />
+                <span>Change Event Banner</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="w-full h-36 bg-gradient-to-r from-[#18202E] to-[#0E141F] border-b border-[#1F293A] flex items-center justify-between px-8 text-slate-500 font-mono text-xs">
-            <span className="text-slate-400 uppercase tracking-wider font-bold">{eventData.eventType} Showcase</span>
-            <span className="text-[#FF9900]/60">AWS Community Session</span>
+            <div className="flex items-center gap-3">
+              <span className="text-slate-400 uppercase tracking-wider font-bold">{eventData.eventType} Showcase</span>
+              <span className="text-[#FF9900]/60">AWS Community Session</span>
+            </div>
+            {isManager && (
+              <button
+                type="button"
+                onClick={() => setIsCoverModalOpen(true)}
+                className="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-[#18202E] hover:bg-[#222E42] text-white border border-[#1F293A] transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Camera size={13} className="text-[#FF9900]" />
+                <span>Add Event Cover Image</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -1105,17 +1132,33 @@ export const EventDetails: React.FC = () => {
         isOpen={isUploadMediaModalOpen}
         onClose={() => setIsUploadMediaModalOpen(false)}
         title="Add Session Media"
-        subtitle="Recap Gallery Photos"
-        size="sm"
+        subtitle="Recap Gallery Photos (Event Media Storage)"
+        size="md"
       >
         <div className="p-5 space-y-4 font-mono text-xs">
+          {eventData && (
+            <ImageUploadDropzone
+              value={newPhotoUrl}
+              aspectRatio="video"
+              label="Upload Session Photo"
+              helperText="PNG, JPG, WebP up to 5MB. Stored in event media storage."
+              onUpload={async (file) => {
+                const res = await uploadEventImage(file, eventData.communityId, eventData.id)
+                if (res.url) {
+                  setNewPhotoUrl(res.url)
+                }
+                return res
+              }}
+              onRemove={() => setNewPhotoUrl('')}
+            />
+          )}
+
           <div>
             <label className="block text-slate-300 uppercase tracking-wider mb-1 font-bold">
-              Photo URL *
+              Or Enter Photo URL Manually
             </label>
             <input
               type="url"
-              required
               value={newPhotoUrl}
               onChange={(e) => setNewPhotoUrl(e.target.value)}
               placeholder="https://... photo URL"
@@ -1139,6 +1182,60 @@ export const EventDetails: React.FC = () => {
               className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-[#FF9900] hover:bg-[#EC7211] transition-all shadow-xs cursor-pointer disabled:opacity-50"
             >
               {isUploadingMedia ? 'Adding...' : 'Add to Gallery'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ============================================================ */}
+      {/* MODAL 2B: CHANGE EVENT COVER IMAGE                           */}
+      {/* ============================================================ */}
+      <Modal
+        isOpen={isCoverModalOpen}
+        onClose={() => setIsCoverModalOpen(false)}
+        title="Event Cover Image"
+        subtitle="Event-Specific Banner (Isolated from Community Media)"
+        size="md"
+      >
+        <div className="p-5 space-y-4 font-mono text-xs">
+          <p className="text-slate-400 font-sans text-xs">
+            This image is strictly specific to this event. It is stored in event media storage and will never overwrite your chapter's community identity.
+          </p>
+
+          {eventData && (
+            <ImageUploadDropzone
+              value={eventData.imageUrl}
+              aspectRatio="video"
+              label="Upload Event Cover (16:9 Banner)"
+              helperText="PNG, JPG, WebP up to 5MB."
+              onUpload={async (file) => {
+                const res = await uploadEventImage(file, eventData.communityId, eventData.id)
+                if (res.url) {
+                  showToast('Event banner updated successfully!')
+                  fetchEventDetails()
+                  setIsCoverModalOpen(false)
+                }
+                return res
+              }}
+              onRemove={async () => {
+                await supabase
+                  .from('community_events')
+                  .update({ image_url: null, updated_at: new Date().toISOString() })
+                  .eq('id', eventData.id)
+                showToast('Event cover removed.')
+                fetchEventDetails()
+                setIsCoverModalOpen(false)
+              }}
+            />
+          )}
+
+          <div className="pt-3 border-t border-[#1F293A] flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsCoverModalOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-[#18202E] border border-[#1F293A] cursor-pointer"
+            >
+              Close
             </button>
           </div>
         </div>

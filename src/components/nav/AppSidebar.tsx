@@ -17,6 +17,7 @@ import {
   ChevronRight,
   LogOut,
   ShieldCheck,
+  Settings,
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { AWSLogo } from '@/components/ui/AWSLogo'
@@ -28,20 +29,23 @@ interface NavItem {
   to: string
   icon: LucideIcon
   badge?: string
+  managerOnly?: boolean
 }
 
-// 10 Core Application Navigation Items as specified:
-// Dashboard, Members, Tasks, Leaderboard, Events, Projects, Analytics, Community, Notifications, Profile
+// Global Sidebar Navigation as specified in Feature 19:
+// Dashboard, Community, Members, Tasks, Events, Projects, Leaderboard, Analytics, Builder World
 const SIDEBAR_NAV: NavItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'Community', to: '/community', icon: Building2 },
   { label: 'Members', to: '/members', icon: Users },
-  { label: 'Builder World', to: '/builder-world', icon: Globe2 },
   { label: 'Tasks', to: '/tasks', icon: CheckSquare },
-  { label: 'Leaderboard', to: '/leaderboard', icon: Trophy },
   { label: 'Events', to: '/events', icon: Calendar },
   { label: 'Projects', to: '/projects', icon: FolderGit2 },
-  { label: 'Analytics', to: '/analytics', icon: BarChart3 },
-  { label: 'Community', to: '/community', icon: Building2 },
+  { label: 'Leaderboard', to: '/leaderboard', icon: Trophy },
+  { label: 'Analytics', to: '/analytics', icon: BarChart3, managerOnly: true, badge: 'Mgr' },
+  { label: 'Builder World', to: '/builder-world', icon: Globe2 },
+  { label: 'Settings', to: '/community/settings', icon: Settings, managerOnly: true, badge: 'Mgr' },
+  { label: 'Audit Log', to: '/audit-log', icon: ShieldCheck, managerOnly: true, badge: 'Mgr' },
   { label: 'Notifications', to: '/notifications', icon: Bell },
   { label: 'Profile', to: '/profile', icon: User },
 ]
@@ -58,7 +62,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   onItemClick,
 }) => {
   const { user, profile, signOut } = useAuth()
-  const { activeCommunity, userRoleInActiveCommunity } = useCommunity()
+  const { activeCommunity, userRoleInActiveCommunity, isManagerOfActiveCommunity } = useCommunity()
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -76,7 +80,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     .substring(0, 2)
     .toUpperCase() || 'AB'
 
-  const isManager = userRoleInActiveCommunity === 'manager'
+  const isManager = isManagerOfActiveCommunity || userRoleInActiveCommunity === 'manager'
+
+  // Member navigation only shows relevant features; Manager navigation exposes management features
+  const filteredNav = SIDEBAR_NAV.filter((item) => {
+    if (item.managerOnly && !isManager) return false
+    return true
+  })
 
   return (
     <aside
@@ -131,7 +141,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         )}
 
         <nav className="space-y-0.5">
-          {SIDEBAR_NAV.map((item) => {
+          {filteredNav.map((item) => {
             const Icon = item.icon
 
             return (
@@ -154,6 +164,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   <Icon size={16} className="flex-shrink-0" />
                   {!collapsed && <span className="truncate">{item.label}</span>}
                 </div>
+
+                {!collapsed && item.badge && (
+                  <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-500/15 text-[#FF9900] border border-amber-500/30 uppercase font-bold">
+                    {item.badge}
+                  </span>
+                )}
               </NavLink>
             )
           })}

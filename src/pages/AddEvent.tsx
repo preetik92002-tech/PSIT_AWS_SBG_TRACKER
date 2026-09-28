@@ -26,6 +26,8 @@ import { useCommunity } from '@/context/CommunityContext'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { CommunityImage } from '@/components/ui/CommunityImage'
+import { ImageUploadDropzone } from '@/components/ui/ImageUploadDropzone'
+import { uploadEventImage } from '@/lib/storageService'
 import { EventStatus } from '@/types/database'
 
 const EVENT_TYPES = [
@@ -125,35 +127,23 @@ export const AddEvent: React.FC = () => {
     fetchExistingEvent()
   }, [editEventId, activeCommunity?.id])
 
-  // Image upload handling with Supabase Storage
+  // Image upload handling with Supabase Storage (Feature 20: Event-Specific Image)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !user) return
+    if (!file || !user || !activeCommunity?.id) return
 
     setIsUploading(true)
     setErrorMessage(null)
 
     try {
-      const ext = file.name.split('.').pop()
-      const fileName = `event-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
-      const filePath = `events/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true })
-
-      if (uploadError) {
-        const localUrl = URL.createObjectURL(file)
-        setCoverImageUrl(localUrl)
-      } else {
-        const { data: pubData } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(filePath)
-        setCoverImageUrl(pubData.publicUrl)
+      const { url, error } = await uploadEventImage(file, activeCommunity.id, editEventId || undefined)
+      if (error) {
+        setErrorMessage(error)
+      } else if (url) {
+        setCoverImageUrl(url)
       }
-    } catch {
-      const localUrl = URL.createObjectURL(file)
-      setCoverImageUrl(localUrl)
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to upload event image.')
     } finally {
       setIsUploading(false)
     }
@@ -525,35 +515,41 @@ export const AddEvent: React.FC = () => {
             </div>
 
             {/* Event Specific Image (Banner / Cover) */}
-            <div>
-              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <div className="space-y-3">
+              <label className="block text-xs font-mono font-semibold text-slate-300 uppercase tracking-wider">
                 Event Cover Image (Event-Specific Banner)
               </label>
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                <div className="relative flex-1 w-full">
-                  <ImageIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="url"
-                    value={coverImageUrl}
-                    onChange={(e) => setCoverImageUrl(e.target.value)}
-                    placeholder="https://... or upload below"
-                    className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-xl bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900]"
-                  />
-                </div>
-                <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-mono font-medium text-slate-300 bg-[#18202E] hover:bg-[#222E42] border border-[#1F293A] transition-colors cursor-pointer shrink-0">
-                  <Upload size={14} />
-                  <span>{isUploading ? 'Uploading...' : 'Upload Image'}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    disabled={isUploading}
-                  />
-                </label>
+
+              {activeCommunity?.id && (
+                <ImageUploadDropzone
+                  value={coverImageUrl}
+                  aspectRatio="video"
+                  label="Upload Event Banner"
+                  helperText="PNG, JPG, WebP up to 5MB. Stored in event media storage."
+                  onUpload={async (file) => {
+                    const res = await uploadEventImage(file, activeCommunity.id, editEventId || undefined)
+                    if (res.url) {
+                      setCoverImageUrl(res.url)
+                    }
+                    return res
+                  }}
+                  onRemove={() => setCoverImageUrl('')}
+                />
+              )}
+
+              <div className="relative">
+                <ImageIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="url"
+                  value={coverImageUrl}
+                  onChange={(e) => setCoverImageUrl(e.target.value)}
+                  placeholder="https://... or enter external image URL"
+                  className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-xl bg-[#0E141F] border border-[#1F293A] text-white placeholder:text-slate-500 focus:outline-none focus:border-[#FF9900]"
+                />
               </div>
-              <span className="text-[10px] text-slate-500 font-sans mt-1 block">
-                Note: This image is specific to this workshop and does not overwrite your chapter identity.
+
+              <span className="text-[10px] text-slate-500 font-sans block">
+                Note: This image is strictly event-specific and will NOT replace or overwrite your community image.
               </span>
             </div>
 

@@ -16,6 +16,7 @@ import {
 import { CommunityImage } from '@/components/ui/CommunityImage'
 import { supabase } from '@/lib/supabase/client'
 import { findDuplicateInstitutionCommunity } from '@/utils/community'
+import { uploadCommunityImage } from '@/lib/storageService'
 
 export interface EditCommunityData {
   name: string
@@ -82,29 +83,16 @@ export const EditCommunityModal: React.FC<EditCommunityModalProps> = ({
     setErrorMessage(null)
 
     try {
-      const fileExt = file.name.split('.').pop() || 'png'
-      const fileName = `community_${initialData.communityId || 'new'}_${Date.now()}.${fileExt}`
-      const filePath = `community-logos/${fileName}`
-
-      // Attempt Supabase storage upload
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { cacheControl: '3600', upsert: true })
-
-      if (uploadError) {
-        // Fallback for offline/local environment: create object URL
-        console.warn('Storage upload warning, using local preview:', uploadError.message)
-        const localUrl = URL.createObjectURL(file)
-        setLogoUrl(localUrl)
-      } else {
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath)
-        if (urlData?.publicUrl) {
-          setLogoUrl(urlData.publicUrl)
-        }
+      const commId = initialData.communityId || 'new'
+      const { url, error } = await uploadCommunityImage(file, commId)
+      if (error) {
+        throw new Error(error)
+      }
+      if (url) {
+        setLogoUrl(url)
       }
     } catch (err) {
-      const localUrl = URL.createObjectURL(file)
-      setLogoUrl(localUrl)
+      setErrorMessage(err instanceof Error ? err.message : 'Image upload failed.')
     } finally {
       setIsUploadingImage(false)
     }
